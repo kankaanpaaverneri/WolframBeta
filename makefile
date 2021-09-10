@@ -7,8 +7,8 @@ all: link clean
 link: ${OBJECTS}
 	${CC} ${OBJECTS} -o WolframBeta
 
-%.o: %.c
-	${CC} ${CFLAGS} -c $^
+%.o: %.cpp
+	${CC} ${CFLAGS} -c $<
 
 clean:
 	rm *.o

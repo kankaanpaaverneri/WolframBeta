@@ -1,7 +1,7 @@
 #include "InputParser.h"
 
 InputParser::InputParser()
-    : position {0} {}
+    : it {buffer.begin()} {}
 
 void InputParser::set_buffer(const std::string buffer)
 {
@@ -13,19 +13,63 @@ const std::string InputParser::get_buffer() const
     return this->buffer;
 }
 
-double InputParser::parse_numbers()
+void InputParser::set_it(std::string::iterator current_iterator)
+{
+    this->it = current_iterator;
+}
+
+const std::string::iterator InputParser::get_it() const
+{
+    return it;
+}
+
+const double InputParser::parse_numbers()
 {
     std::string numbers;
-    for(const char ch: buffer)
+    auto it {this->get_it()}; 
+    while(it != buffer.end())
     {
-        if(ch >= '0' || ch <= '9')
+        if(*it >= '0' && *it <= '9')
         {
-            numbers += ch;
+            numbers += *it;
         }
-        else if(ch == '.' || ch == ',')
+        else if(*it == '.')
+        {
+            numbers += *it;
+        }
+        else if(*it == ',')
         {
             numbers += '.';
         }
+        else
+            break;
+        it++;
     }
+    this->set_it(it);
     return std::stod(numbers);
+}
+
+const char InputParser::parse_variables()
+{
+    char variable {' '};
+    auto it {this->get_it()}; 
+
+    while(it != buffer.end())
+    {
+        if(*it >= 'A' && *it <= 'Z')
+        {
+            variable = *it;
+            break;
+        }
+        else if(*it >= 'a' && *it <= 'z')
+        {
+            variable = *it;
+            break;
+        }
+        else
+            break;
+        it++;
+    }
+    
+    return variable;
 }
