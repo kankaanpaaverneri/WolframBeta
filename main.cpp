@@ -11,12 +11,6 @@ int main()
     std::cout << buffer << std::endl;
     InputParser parser;
     parser.set_buffer(buffer);
-    double number = parser.parse_numbers();
-    char variable = parser.parse_variables();
-
-    std::cout << number << std::endl;
-    std::cout << variable << std::endl;
-    
-
+    parser.parse_buffer();
     return 0;
 }
