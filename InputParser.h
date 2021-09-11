@@ -4,17 +4,20 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdio.h>
 
 #define NOT_FOUND '?'
+#define NOT_NUMBER 0
 
-struct monomial
+struct value
 {
     char sign;
     union num_or_var
     {
-        unsigned double num;
+        double number;
         char variable;
-    } num_or_var;
+    } number_or_variable;
+    char special_sign;
 };
 
 class InputParser
@@ -22,7 +25,7 @@ class InputParser
     private:
         std::string buffer;
         std::string::iterator it;
-        std::vector<Monomial> polynomial;
+        std::vector<value> values;
     public:
         InputParser();
 
@@ -31,7 +34,12 @@ class InputParser
         void set_it(std::string::iterator current_iterator);
         const std::string::iterator get_it() const;
 
+        struct value init_value(struct value value);
+
         bool parse_buffer();
+        bool value_is_full(struct value value);
+        void display_values();
+
 
         //is_functions
         bool is_number(std::string::iterator it);

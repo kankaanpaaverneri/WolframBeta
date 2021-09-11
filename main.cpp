@@ -1,16 +1,19 @@
 #include <iostream>
 #include "InputParser.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-    std::cout << "Wolfram Beta" << std::endl;
-
-    std::cout << "Write some input: ";
-    std::string buffer;
-    std::getline(std::cin, buffer);
-    std::cout << buffer << std::endl;
     InputParser parser;
-    parser.set_buffer(buffer);
-    parser.parse_buffer();
+
+    if(argc == 2)
+        parser.set_buffer(argv[1]);
+    
+    if(parser.parse_buffer())
+        parser.display_values();
+    else
+    {
+        std::cout << "Error parsing the buffer" << std::endl;
+    }
+    
     return 0;
 }

@@ -23,68 +23,125 @@ const std::string::iterator InputParser::get_it() const
     return it;
 }
 
+struct value InputParser::init_value(struct value value)
+{
+    struct value new_value {};
+    value = new_value;
+    return value;
+}
+
 bool InputParser::parse_buffer()
 {
     auto it {InputParser::get_buffer().begin()};
-    while(it != InputParser::get_buffer().end())
+    struct value value {NOT_FOUND, NOT_NUMBER};
+
+    while(it != buffer.end())
     {
-        struct monomial m {0, NOT_FOUND, NOT_FOUND};
-        if(InputParser::is_number(it))
+        if(InputParser::is_number(InputParser::it))
         {
-            if((const unsigned double number = InputParser::parse_numbers()) != 0)
+            double number {NOT_NUMBER};
+            if((number = InputParser::parse_numbers()) != NOT_NUMBER)
             {
-                m.num_or_var.number = number;
+                if(it == InputParser::get_buffer().begin())
+                    value.sign = '+';
+                value.number_or_variable.number = number;
             }
         }
-        else if(InputParser::is_variable(it))
+        else if(InputParser::is_variable(InputParser::it))
         {
-            if((const char variable = InputParser::parse_variables()) != NOT_FOUND)
+            char variable {NOT_FOUND};
+            if((variable = InputParser::parse_variables()) != NOT_FOUND)
             {
-                m.num_or_var.variable = variable;
+                value.number_or_variable.variable = variable;
             }
         }
-        else if(InputParser::is_power_sign(it))
+        else if(InputParser::is_power_sign(InputParser::it))
         {
-            if((const char power_sign = InputParser::parse_power_sign()) != NOT_FOUND)
+            char power_sign {NOT_FOUND};
+            if((power_sign = InputParser::parse_power_sign()) != NOT_FOUND)
             {
-                m.sign = power_sign;
+                value.special_sign = power_sign;
             }
         }
-        else if(InputParser::is_multiplication_sign(it))
+        else if(InputParser::is_multiplication_sign(InputParser::it))
         {
-            if((const char multiplication_sign = InputParser::parse_multiplication_sign()) != NOT_FOUND)
+            char multiplication_sign {NOT_FOUND};
+            if((multiplication_sign = InputParser::parse_multiplication_sign()) != NOT_FOUND)
             {
-                m.sign = multiplication_sign;
+                value.special_sign = multiplication_sign;
             }
         }
-        else if(InputParser::is_division_sign(it))
+        else if(InputParser::is_division_sign(InputParser::it))
         {
-            if((const char division_sign = InputParser::parse_division_sign()) != NOT_FOUND)
+            char division_sign {NOT_FOUND};
+            if((division_sign = InputParser::parse_division_sign()) != NOT_FOUND)
             {
-                m.sign = division_sign;
+                value.special_sign = division_sign;
             }
         }
-        else if(InputParser::is_minus_sign(it))
+        else if(InputParser::is_minus_sign(InputParser::it))
         {
-            if((const char minus_sign = InputParser::parse_minus_sign()) != NOT_FOUND)
+            char minus_sign {NOT_FOUND};
+            if((minus_sign = InputParser::parse_minus_sign()) != NOT_FOUND)
             {
-                m.sign = minus_sign;
+                value.sign = minus_sign;
             }
         }
-        else if(InputParser::is_plus_sign(it))
+        else if(InputParser::is_plus_sign(InputParser::it))
         {
-            if((const char plus_sign = InputParser::parse_plus_sign()) != NOT_FOUND)
+            char plus_sign {NOT_FOUND};
+            if((plus_sign = InputParser::parse_plus_sign()) != NOT_FOUND)
             {
-                m.sign = plus_sign;
+                value.sign = plus_sign;
             }
         }
         else
+            return false;
+
+        if(InputParser::value_is_full(value))
         {
-            break;
+            values.push_back(value);
+            value = InputParser::init_value(value);
         }
-        it++;
+        
+        it = InputParser::get_it();
     }
     return true;
+}
+
+bool InputParser::value_is_full(struct value value)
+{
+    int counter {0};
+    if(value.sign != NOT_FOUND)
+        counter++;
+    
+    if(value.number_or_variable.number != NOT_NUMBER)
+        counter++;
+    
+    if(value.number_or_variable.variable != NOT_FOUND)
+        counter++;
+    
+    if(counter > 2)
+        return true;
+    
+    return false;
+}
+
+void InputParser::display_values()
+{
+    for(auto value: values)
+    {
+        std::cout << "sign: " << value.sign << " ";
+        if(value.number_or_variable.variable != NOT_FOUND)
+        {
+            printf("%c", value.number_or_variable.variable);
+        }
+        if(value.number_or_variable.number != NOT_NUMBER)
+        {
+            printf("%.2f", value.number_or_variable.number);
+        }
+        std::cout << std::endl << std::endl;
+    }
 }
 
 bool InputParser::is_number(std::string::iterator it)
@@ -145,29 +202,31 @@ bool InputParser::is_plus_sign(std::string::iterator it)
 
 const double InputParser::parse_numbers()
 {
-    std::string numbers {'0'};
+    std::string str_of_numbers;
     auto it {InputParser::get_it()}; 
     while(it != buffer.end())
     {
         if(InputParser::is_number(it))
         {
-            
-            numbers += *it;
+            str_of_numbers += *it;
         }
         else if(*it == '.')
         {
-            numbers += *it;
+            str_of_numbers += *it;
         }
         else if(*it == ',')
         {
-            numbers += '.';
+            str_of_numbers += '.';
         }
         else
             break;
         it++;
     }
-    InputParser::set_it(++it);
-    return std::stod(numbers);
+    InputParser::set_it(it);
+    if(str_of_numbers.empty())
+        return NOT_NUMBER;
+    
+    return std::stod(str_of_numbers);
 }
 
 const char InputParser::parse_variables()
@@ -249,6 +308,6 @@ const char InputParser::parse_power_sign()
         if(InputParser::is_power_sign(it))
             power_sign = *it;
     }
-    this->set_it(++it);
+    InputParser::set_it(++it);
     return power_sign;
 }
