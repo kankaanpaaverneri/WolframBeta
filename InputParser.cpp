@@ -25,7 +25,8 @@ const std::string::iterator InputParser::get_it() const
 
 struct value InputParser::init_value(struct value value)
 {
-    struct value new_value {};
+    struct value new_value {EMPTY, EMPTY, EMPTY, ZERO};
+
     value = new_value;
     return value;
 }
@@ -33,66 +34,74 @@ struct value InputParser::init_value(struct value value)
 bool InputParser::parse_buffer()
 {
     auto it {InputParser::get_buffer().begin()};
-    struct value value {NOT_FOUND, NOT_NUMBER};
+    struct value value;
+    value = InputParser::init_value(value);
 
     while(it != buffer.end())
     {
         if(InputParser::is_number(InputParser::it))
         {
-            double number {NOT_NUMBER};
-            if((number = InputParser::parse_numbers()) != NOT_NUMBER)
+            if(InputParser::is_variable(InputParser::it-1))
+                value.sign = '*';
+            
+            double number {ZERO};
+            if((number = InputParser::parse_numbers()) != ZERO)
             {
                 if(it == InputParser::get_buffer().begin())
-                    value.sign = '+';
-                value.number_or_variable.number = number;
+                    value.positive_or_negative = '+';
+                
+                value.number = number;
             }
         }
         else if(InputParser::is_variable(InputParser::it))
         {
-            char variable {NOT_FOUND};
-            if((variable = InputParser::parse_variables()) != NOT_FOUND)
+            if(InputParser::is_number(InputParser::it-1))
+                value.sign = '*';
+            
+            char variable {EMPTY};
+            if((variable = InputParser::parse_variables()) != EMPTY)
             {
-                value.number_or_variable.variable = variable;
+                value.variable = variable;
             }
         }
         else if(InputParser::is_power_sign(InputParser::it))
         {
-            char power_sign {NOT_FOUND};
-            if((power_sign = InputParser::parse_power_sign()) != NOT_FOUND)
+            char power_sign {EMPTY};
+            if((power_sign = InputParser::parse_power_sign()) != EMPTY)
             {
-                value.special_sign = power_sign;
+                value.sign = power_sign;
             }
         }
         else if(InputParser::is_multiplication_sign(InputParser::it))
         {
-            char multiplication_sign {NOT_FOUND};
-            if((multiplication_sign = InputParser::parse_multiplication_sign()) != NOT_FOUND)
+            char multiplication_sign {EMPTY};
+            if((multiplication_sign = InputParser::parse_multiplication_sign()) != EMPTY)
             {
-                value.special_sign = multiplication_sign;
+                value.sign = multiplication_sign;
             }
         }
         else if(InputParser::is_division_sign(InputParser::it))
         {
-            char division_sign {NOT_FOUND};
-            if((division_sign = InputParser::parse_division_sign()) != NOT_FOUND)
+            char division_sign {EMPTY};
+            if((division_sign = InputParser::parse_division_sign()) != EMPTY)
             {
-                value.special_sign = division_sign;
+                value.sign = division_sign;
             }
         }
         else if(InputParser::is_minus_sign(InputParser::it))
         {
-            char minus_sign {NOT_FOUND};
-            if((minus_sign = InputParser::parse_minus_sign()) != NOT_FOUND)
+            char minus_sign {EMPTY};
+            if((minus_sign = InputParser::parse_minus_sign()) != EMPTY)
             {
-                value.sign = minus_sign;
+                value.positive_or_negative = minus_sign;
             }
         }
         else if(InputParser::is_plus_sign(InputParser::it))
         {
-            char plus_sign {NOT_FOUND};
-            if((plus_sign = InputParser::parse_plus_sign()) != NOT_FOUND)
+            char plus_sign {EMPTY};
+            if((plus_sign = InputParser::parse_plus_sign()) != EMPTY)
             {
-                value.sign = plus_sign;
+                value.positive_or_negative = plus_sign;
             }
         }
         else
@@ -112,18 +121,33 @@ bool InputParser::parse_buffer()
 bool InputParser::value_is_full(struct value value)
 {
     int counter {0};
-    if(value.sign != NOT_FOUND)
-        counter++;
     
-    if(value.number_or_variable.number != NOT_NUMBER)
+    if(value.positive_or_negative != EMPTY)
         counter++;
+    else
+        counter--;
     
-    if(value.number_or_variable.variable != NOT_FOUND)
+    if(value.sign != EMPTY)
         counter++;
+    else
+        counter--;
     
-    if(counter > 2)
+    if(value.number != ZERO)
+        counter++;
+    else
+        counter--;
+
+    if(value.variable != EMPTY)
+        counter++;
+    else
+        counter--;
+
+
+    if(counter == 0 || counter == 1)
+    {
         return true;
-    
+    }
+
     return false;
 }
 
@@ -131,16 +155,15 @@ void InputParser::display_values()
 {
     for(auto value: values)
     {
-        std::cout << "sign: " << value.sign << " ";
-        if(value.number_or_variable.variable != NOT_FOUND)
-        {
-            printf("%c", value.number_or_variable.variable);
-        }
-        if(value.number_or_variable.number != NOT_NUMBER)
-        {
-            printf("%.2f", value.number_or_variable.number);
-        }
-        std::cout << std::endl << std::endl;
+        if(value.positive_or_negative != EMPTY)
+            std::cout << value.positive_or_negative << " ";
+        if(value.sign != EMPTY)
+            std::cout << value.sign << " ";
+        if(value.number != ZERO)
+            std::cout << value.number << " ";
+        if(value.variable != EMPTY)
+            std::cout << value.variable << " ";
+        std::cout << std::endl;
     }
 }
 
@@ -224,14 +247,14 @@ const double InputParser::parse_numbers()
     }
     InputParser::set_it(it);
     if(str_of_numbers.empty())
-        return NOT_NUMBER;
+        return ZERO;
     
     return std::stod(str_of_numbers);
 }
 
 const char InputParser::parse_variables()
 {
-    char variable {NOT_FOUND};
+    char variable {EMPTY};
     auto it {InputParser::get_it()}; 
 
     if(it != buffer.end())
@@ -245,7 +268,7 @@ const char InputParser::parse_variables()
 
 const char InputParser::parse_multiplication_sign()
 {
-    char multiplication_sign {NOT_FOUND};
+    char multiplication_sign {EMPTY};
     auto it {InputParser::get_it()};
     if(it != buffer.end())
     {
@@ -258,7 +281,7 @@ const char InputParser::parse_multiplication_sign()
 
 const char InputParser::parse_plus_sign()
 {
-    char plus_sign {NOT_FOUND};
+    char plus_sign {EMPTY};
     auto it {InputParser::get_it()};
 
     if(it != buffer.end())
@@ -272,7 +295,7 @@ const char InputParser::parse_plus_sign()
 
 const char InputParser::parse_minus_sign()
 {
-    char minus_sign {NOT_FOUND};
+    char minus_sign {EMPTY};
     auto it {InputParser::get_it()};
 
     if(it != buffer.end())
@@ -286,7 +309,7 @@ const char InputParser::parse_minus_sign()
 
 const char InputParser::parse_division_sign()
 {
-    char division_sign {NOT_FOUND};
+    char division_sign {EMPTY};
     auto it {InputParser::get_it()};
 
     if(it != buffer.end())
@@ -300,7 +323,7 @@ const char InputParser::parse_division_sign()
 
 const char InputParser::parse_power_sign()
 {
-    char power_sign {NOT_FOUND};
+    char power_sign {EMPTY};
     auto it {this->get_it()};
 
     if(it != buffer.end())

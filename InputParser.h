@@ -6,18 +6,15 @@
 #include <vector>
 #include <stdio.h>
 
-#define NOT_FOUND '?'
-#define NOT_NUMBER 0
+#define EMPTY 32
+#define ZERO 0
 
 struct value
 {
-    char sign;
-    union num_or_var
-    {
-        double number;
-        char variable;
-    } number_or_variable;
-    char special_sign;
+    char positive_or_negative; // +, -
+    char sign; // *, ^, /, sqrt()
+    char variable;
+    double number;
 };
 
 class InputParser
