@@ -34,6 +34,12 @@ bool InputParser::parse_buffer()
     InputParser::it = buffer.begin();
     struct value value {InputParser::init_value()};
 
+    /*
+    In this loop the iterator "it" will iterate through the buffer and
+    parse the characters in to a structure. When the structure
+    is filled it will be pushed in to a vector.
+    */
+
     while(InputParser::it != buffer.end())
     {
         if(InputParser::is_number(InputParser::it))
@@ -128,6 +134,7 @@ bool InputParser::parse_buffer()
         else
             return false;
 
+        //This will determine if the current struct is ready to be pushed in to a vector
         if(InputParser::value_is_full(value))
         {
             values.push_back(value);
@@ -145,13 +152,13 @@ bool InputParser::value_is_full(struct value &value)
 
     if(value.number != ZERO || value.variable != EMPTY) //If number or variable is found
         counter++;
-
+    
     if(value.sign != EMPTY)
     {
         if(value.positive_or_negative == EMPTY)
             value.positive_or_negative = '+';
     }
-    
+
     if(value.positive_or_negative != EMPTY)
         counter++;
 

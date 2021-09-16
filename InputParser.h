@@ -23,7 +23,7 @@ class InputParser
     private:
         std::string buffer;
         std::string::iterator it;
-        std::vector<value> values;
+        std::vector<struct value> values;
     public:
         InputParser();
 
@@ -39,7 +39,6 @@ class InputParser
         void display_values();
 
 
-        //is_functions
         bool is_number(const std::string::iterator it);
         bool is_variable(const std::string::iterator it);
         bool is_power_sign(const std::string::iterator it);
@@ -48,7 +47,6 @@ class InputParser
         bool is_minus_sign(const std::string::iterator it);
         bool is_plus_sign(const std::string::iterator it);
 
-        //Functions to deal with different characters in the buffer
         const double parse_numbers();
         const char parse_variables();
         const char parse_plus_sign();
