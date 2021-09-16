@@ -23,40 +23,40 @@ const std::string::iterator InputParser::get_it() const
     return it;
 }
 
-struct value InputParser::init_value(struct value value)
+struct value InputParser::init_value()
 {
     struct value new_value {EMPTY, EMPTY, EMPTY, ZERO};
-
-    value = new_value;
-    return value;
+    return new_value;
 }
 
 bool InputParser::parse_buffer()
 {
-    auto it {InputParser::get_buffer().begin()};
-    struct value value;
-    value = InputParser::init_value(value);
+    InputParser::it = buffer.begin();
+    struct value value {InputParser::init_value()};
 
-    while(it != buffer.end())
+    while(InputParser::it != buffer.end())
     {
         if(InputParser::is_number(InputParser::it))
         {
             if(InputParser::is_variable(InputParser::it-1))
                 value.sign = '*';
             
+            if(InputParser::it == buffer.begin())
+                value.positive_or_negative = '+';
+            
             double number {ZERO};
             if((number = InputParser::parse_numbers()) != ZERO)
-            {
-                if(it == InputParser::get_buffer().begin())
-                    value.positive_or_negative = '+';
-                
+            {   
                 value.number = number;
             }
         }
         else if(InputParser::is_variable(InputParser::it))
         {
-            if(InputParser::is_number(InputParser::it-1))
-                value.sign = '*';
+            if(it != buffer.begin())
+            {
+                if(InputParser::is_number(InputParser::it-1) || InputParser::is_variable(InputParser::it-1))
+                    value.sign = '*';
+            }
             
             char variable {EMPTY};
             if((variable = InputParser::parse_variables()) != EMPTY)
@@ -110,7 +110,7 @@ bool InputParser::parse_buffer()
         if(InputParser::value_is_full(value))
         {
             values.push_back(value);
-            value = InputParser::init_value(value);
+            value = InputParser::init_value();
         }
         
         it = InputParser::get_it();
@@ -118,36 +118,25 @@ bool InputParser::parse_buffer()
     return true;
 }
 
-bool InputParser::value_is_full(struct value value)
+bool InputParser::value_is_full(struct value &value)
 {
     int counter {0};
+
+    if(value.number != ZERO || value.variable != EMPTY) //If number or variable is found
+        counter++;
+
+    if(value.sign != EMPTY)
+    {
+        if(value.positive_or_negative == EMPTY)
+            value.positive_or_negative = '+';
+    }
     
     if(value.positive_or_negative != EMPTY)
         counter++;
-    else
-        counter--;
-    
-    if(value.sign != EMPTY)
-        counter++;
-    else
-        counter--;
-    
-    if(value.number != ZERO)
-        counter++;
-    else
-        counter--;
 
-    if(value.variable != EMPTY)
-        counter++;
-    else
-        counter--;
-
-
-    if(counter == 0 || counter == 1)
-    {
+    if(counter == 2)
         return true;
-    }
-
+    
     return false;
 }
 
@@ -156,18 +145,18 @@ void InputParser::display_values()
     for(auto value: values)
     {
         if(value.positive_or_negative != EMPTY)
-            std::cout << value.positive_or_negative << " ";
+            std::cout << "Positive or negative: " << value.positive_or_negative << std::endl;
         if(value.sign != EMPTY)
-            std::cout << value.sign << " ";
+            std::cout << "Sign: " << value.sign << std::endl;
         if(value.number != ZERO)
-            std::cout << value.number << " ";
+            std::cout << "Number: " << value.number << std::endl;
         if(value.variable != EMPTY)
-            std::cout << value.variable << " ";
+            std::cout << "Variable: " << value.variable << std::endl;
         std::cout << std::endl;
     }
 }
 
-bool InputParser::is_number(std::string::iterator it)
+bool InputParser::is_number(const std::string::iterator it)
 {
     if(*it >= '0' && *it <= '9')
         return true;
@@ -175,7 +164,7 @@ bool InputParser::is_number(std::string::iterator it)
     return false;
 }
 
-bool InputParser::is_variable(std::string::iterator it)
+bool InputParser::is_variable(const std::string::iterator it)
 {
     if((*it >= 'A' && *it <= 'Z') || (*it >= 'a' && *it <= 'z'))
         return true;
@@ -183,7 +172,7 @@ bool InputParser::is_variable(std::string::iterator it)
     return false;
 }
 
-bool InputParser::is_power_sign(std::string::iterator it)
+bool InputParser::is_power_sign(const std::string::iterator it)
 {
     if(*it == '^')
         return true;
@@ -191,7 +180,7 @@ bool InputParser::is_power_sign(std::string::iterator it)
     return false;
 }
 
-bool InputParser::is_multiplication_sign(std::string::iterator it)
+bool InputParser::is_multiplication_sign(const std::string::iterator it)
 {
     if(*it == '*')
         return true;
@@ -199,7 +188,7 @@ bool InputParser::is_multiplication_sign(std::string::iterator it)
     return false;
 }
 
-bool InputParser::is_division_sign(std::string::iterator it)
+bool InputParser::is_division_sign(const std::string::iterator it)
 {
     if(*it == '/')
         return true;
@@ -207,7 +196,7 @@ bool InputParser::is_division_sign(std::string::iterator it)
     return false;
 }
 
-bool InputParser::is_minus_sign(std::string::iterator it)
+bool InputParser::is_minus_sign(const std::string::iterator it)
 {
     if(*it == '-')
         return true;
@@ -215,7 +204,7 @@ bool InputParser::is_minus_sign(std::string::iterator it)
     return false;
 }
 
-bool InputParser::is_plus_sign(std::string::iterator it)
+bool InputParser::is_plus_sign(const std::string::iterator it)
 {
     if(*it == '+')
         return true;
@@ -225,7 +214,7 @@ bool InputParser::is_plus_sign(std::string::iterator it)
 
 const double InputParser::parse_numbers()
 {
-    std::string str_of_numbers;
+    std::string str_of_numbers {};
     auto it {InputParser::get_it()}; 
     while(it != buffer.end())
     {

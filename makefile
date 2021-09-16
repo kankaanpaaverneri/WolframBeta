@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -std=c++17 -Wall -g
-OBJECTS = main.o InputParser.o
+OBJECTS = main.o InputParser.o Util.o
 BIN = WolframBeta
 
 all: link clean
@@ -17,4 +17,6 @@ clean:
 tests: ${BIN}
 	./$^ 2+21.5*3-1
 	./$^ 123x+12-23
-	
+	./$^ 7*12^4-72+8*4+5^6
+	./$^ 21xy^2*3+-31--2
+	./$^ -x^2+x--12
