@@ -90,18 +90,39 @@ bool InputParser::parse_buffer()
         }
         else if(InputParser::is_minus_sign(InputParser::it))
         {
-            char minus_sign {EMPTY};
-            if((minus_sign = InputParser::parse_minus_sign()) != EMPTY)
+            if(InputParser::is_minus_sign(InputParser::it-1)) //Logic for converting -- to +
             {
-                value.positive_or_negative = minus_sign;
+                value.positive_or_negative = '+';
+                InputParser::set_it(++it);
+            }
+            else if(InputParser::is_plus_sign(InputParser::it-1)) //Logic for converting +- to -
+            {
+                value.positive_or_negative = '-';
+                InputParser::set_it(++it);
+            }
+            else
+            {
+                char minus_sign {EMPTY};
+                if((minus_sign = InputParser::parse_minus_sign()) != EMPTY)
+                {
+                    value.positive_or_negative = minus_sign;
+                }
             }
         }
         else if(InputParser::is_plus_sign(InputParser::it))
         {
-            char plus_sign {EMPTY};
-            if((plus_sign = InputParser::parse_plus_sign()) != EMPTY)
+            if(InputParser::is_minus_sign(InputParser::it-1)) //Logic for converting -+ to -
             {
-                value.positive_or_negative = plus_sign;
+                value.positive_or_negative = '-';
+                InputParser::set_it(++it);
+            }
+            else
+            {
+                char plus_sign {EMPTY};
+                if((plus_sign = InputParser::parse_plus_sign()) != EMPTY)
+                {
+                    value.positive_or_negative = plus_sign;
+                }
             }
         }
         else
