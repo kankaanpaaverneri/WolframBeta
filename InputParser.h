@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#define EMPTY 32
+#define EMPTY ' '
 #define ZERO 0
 
 struct value
@@ -24,6 +24,7 @@ class InputParser
         std::string buffer;
         std::string::iterator it;
         std::vector<struct value> values;
+        const std::string example_sqrt_str {"sqrt["};
     public:
         InputParser();
 
@@ -46,6 +47,7 @@ class InputParser
         bool is_division_sign(const std::string::iterator it);
         bool is_minus_sign(const std::string::iterator it);
         bool is_plus_sign(const std::string::iterator it);
+        bool is_sqrt_sign(const std::string::iterator it);
 
         const double parse_numbers();
         const char parse_variables();

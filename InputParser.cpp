@@ -56,6 +56,10 @@ bool InputParser::parse_buffer()
                 value.number = number;
             }
         }
+        else if(InputParser::is_sqrt_sign(InputParser::it) != ZERO)
+        {
+            std::cout << "Is sqrt" << std::endl;
+        }
         else if(InputParser::is_variable(InputParser::it))
         {
             if(it != buffer.begin())
@@ -240,6 +244,27 @@ bool InputParser::is_plus_sign(const std::string::iterator it)
     return false;
 }
 
+bool InputParser::is_sqrt_sign(const std::string::iterator it)
+{
+    std::string::iterator temp_it {it};
+    
+    unsigned int i {0};
+    const unsigned int n {5};
+
+    while(i < n)
+    {
+        if(*temp_it == example_sqrt_str.at(i))
+        {
+            temp_it++;
+            i++;
+        }
+        else
+            return ZERO;
+    }
+
+    return ZERO;
+}
+
 const double InputParser::parse_numbers()
 {
     std::string str_of_numbers {};
@@ -341,7 +366,7 @@ const char InputParser::parse_division_sign()
 const char InputParser::parse_power_sign()
 {
     char power_sign {EMPTY};
-    auto it {this->get_it()};
+    auto it {InputParser::get_it()};
 
     if(it != buffer.end())
     {
