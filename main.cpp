@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     if(argc == 2)
         parser.set_buffer(argv[1]);
     
-    if(parser.parse_buffer())
+    if(parser.parse_buffer(parser.get_buffer(), parser.get_buffer().begin()))
         parser.display_values();
     else
     {
