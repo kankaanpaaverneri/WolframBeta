@@ -10,6 +10,14 @@
 #define EMPTY ' '
 #define ZERO 0
 
+#define PLUS_SIGN '+'
+#define MINUS_SIGN '-'
+#define MULTIPLICATION_SIGN '*'
+#define DIVISION_SIGN '/'
+#define POWER_SIGN '^'
+#define OPEN_BRACKET '['
+#define CLOSED_BRACKET ']'
+
 struct value
 {
     char positive_or_negative; // +, -
@@ -31,6 +39,7 @@ class InputParser
         std::string get_buffer();
 
         struct value init_value();
+        bool value_is_empty(const struct value value);
 
         bool parse_buffer(std::string buffer, std::string::iterator cur_it);
         bool value_is_full(struct value &value);
@@ -55,6 +64,11 @@ class InputParser
         const char parse_multiplication_sign(const std::string sub_buffer, std::string::iterator &it);
         const char parse_division_sign(const std::string sub_buffer, std::string::iterator &it);
         const char parse_power_sign(const std::string sub_buffer, std::string::iterator &it);
+
+        const char add_multiplication_if_required(const std::string &sub_buffer, const std::string::iterator &cur_it, const struct value &value);
+        const char add_plus_sign_if_required(const std::string &sub_buffer, const std::string::iterator &cur_it, const struct value &value);
+        const char convert_double_negative_to_positive(const std::string &sub_buffer, std::string::iterator &cur_it, const struct value &value);
+        const char convert_positive_negative_to_minus(const std::string &sub_buffer, std::string::iterator &cur_it, const struct value &value);
 };
 
 #endif
