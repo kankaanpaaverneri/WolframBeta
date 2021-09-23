@@ -15,7 +15,7 @@ std::string InputParser::get_buffer()
 
 struct value InputParser::init_value()
 {
-    struct value new_value {EMPTY, EMPTY, EMPTY, ZERO};
+    struct value new_value {EMPTY, EMPTY, EMPTY, ZERO, EMPTY, EMPTY};
     return new_value;
 }
 
@@ -41,81 +41,92 @@ bool InputParser::parse_buffer(std::string sub_buffer, std::string::iterator cur
 
     while(cur_it != sub_buffer.end())
     {
-        if(InputParser::is_number(cur_it))
-        {
-            value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, cur_it, value);
-            value.sign = InputParser::add_multiplication_if_required(sub_buffer, cur_it, value);
-            
-            double number {ZERO};
-            if((number = InputParser::parse_numbers(sub_buffer, cur_it)) != ZERO)  
-                value.number = number;
-        }
-        else if(InputParser::is_sqrt_sign(cur_it) != ZERO)
-        {
-            std::cout << "Is sqrt" << std::endl;
-        }
-        else if(InputParser::is_variable(cur_it))
-        {
-            value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, cur_it, value);
-            value.sign = InputParser::add_multiplication_if_required(sub_buffer, cur_it, value);
-            
-            char variable {EMPTY};
-            if((variable = InputParser::parse_variable(sub_buffer, cur_it)) != EMPTY)
-                value.variable = variable;
-        }
-        else if(InputParser::is_power_sign(cur_it))
-        {
-            char power_sign {EMPTY};
-            if((power_sign = InputParser::parse_power_sign(sub_buffer, cur_it)) != EMPTY)
-                value.sign = power_sign;
-        }
-        else if(InputParser::is_multiplication_sign(cur_it))
-        {
-            char multiplication_sign {EMPTY};
-            if((multiplication_sign = InputParser::parse_multiplication_sign(sub_buffer, cur_it)) != EMPTY)
-                value.sign = multiplication_sign;
-        }
-        else if(InputParser::is_division_sign(cur_it))
-        {
-            char division_sign {EMPTY};
-            if((division_sign = InputParser::parse_division_sign(sub_buffer, cur_it)) != EMPTY)
-            {
-                value.sign = division_sign;
-            }
-        }
-        else if(InputParser::is_minus_sign(cur_it))
-        {
-            value.positive_or_negative = InputParser::convert_double_negative_to_positive(sub_buffer, cur_it, value);
-            
-            if(value.positive_or_negative == EMPTY)
-                value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, cur_it, value);
-
-            if(value.positive_or_negative == EMPTY)
-                value.positive_or_negative = InputParser::parse_minus_sign(sub_buffer, cur_it);
-        }
-        else if(InputParser::is_plus_sign(cur_it))
-        {
-            value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, cur_it, value);
-            
-            if(value.positive_or_negative == EMPTY)
-                value.positive_or_negative = InputParser::parse_plus_sign(sub_buffer, cur_it);
-        }
-        else
+        if(InputParser::write_in_value(sub_buffer, cur_it, value) == false)
             return false;
 
-        //This will determine if the current struct is ready to be pushed in to a vector
-        if(InputParser::value_is_full(value))
+        //This will determine if the current struct value "value" is ready to be pushed in to a vector "expression"
+        if(InputParser::is_value_full(value))
         {
-            values.push_back(value);
+            expression.push_back(value);
             value = InputParser::init_value();
         }
     }
+    
+    return true;
+}
+bool InputParser::write_in_value(std::string &sub_buffer, std::string::iterator &cur_it, struct value &value)
+{
+    if(InputParser::is_number(cur_it))
+    {
+        value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, cur_it, value);
+        value.sign = InputParser::add_multiplication_if_required(sub_buffer, cur_it, value);
+        
+        double number {ZERO};
+        if((number = InputParser::parse_numbers(sub_buffer, cur_it)) != ZERO)  
+            value.number = number;
+    }
+    else if(InputParser::is_sqrt_sign(cur_it) != ZERO)
+    {
+        std::cout << "Is sqrt" << std::endl;
+    }
+    else if(InputParser::is_variable(cur_it))
+    {
+        value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, cur_it, value);
+        value.sign = InputParser::add_multiplication_if_required(sub_buffer, cur_it, value);
+      
+    char variable {EMPTY};
+        if((variable = InputParser::parse_variable(sub_buffer, cur_it)) != EMPTY)
+            value.variable = variable;
+    }
+    else if(InputParser::is_power_sign(cur_it))
+    {
+        char power_sign {EMPTY};
+        if((power_sign = InputParser::parse_power_sign(sub_buffer, cur_it)) != EMPTY)
+            value.sign = power_sign;
+    }
+    else if(InputParser::is_multiplication_sign(cur_it))
+    {
+        char multiplication_sign {EMPTY};
+        if((multiplication_sign = InputParser::parse_multiplication_sign(sub_buffer, cur_it)) != EMPTY)
+            value.sign = multiplication_sign;
+    }
+    else if(InputParser::is_division_sign(cur_it))
+    {
+        char division_sign {EMPTY};
+        if((division_sign = InputParser::parse_division_sign(sub_buffer, cur_it)) != EMPTY)
+        {
+            value.sign = division_sign;
+        }
+    }
+    else if(InputParser::is_minus_sign(cur_it))
+    {
+        value.positive_or_negative = InputParser::convert_double_negative_to_positive(sub_buffer, cur_it, value);
+        
+        if(value.positive_or_negative == EMPTY)
+            value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, cur_it, value);
+
+        if(value.positive_or_negative == EMPTY)
+            value.positive_or_negative = InputParser::parse_minus_sign(sub_buffer, cur_it);
+    }
+    else if(InputParser::is_plus_sign(cur_it))
+    {
+        value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, cur_it, value);
+            
+        if(value.positive_or_negative == EMPTY)
+            value.positive_or_negative = InputParser::parse_plus_sign(sub_buffer, cur_it);
+    }
+    else
+        return false;
+    
     return true;
 }
 
-bool InputParser::value_is_full(struct value &value)
+bool InputParser::is_value_full(struct value &value)
 {
     int counter {0};
+
+    if(value.open_bracket == OPEN_BRACKET && value.closed_bracket == CLOSED_BRACKET)
+        counter++;
 
     if(value.number != ZERO || value.variable != EMPTY) //If number or variable is found
         counter++;
@@ -137,7 +148,7 @@ bool InputParser::value_is_full(struct value &value)
 
 void InputParser::display_values()
 {
-    for(auto value: values)
+    for(auto value: expression)
     {
         if(value.positive_or_negative != EMPTY)
             std::cout << "Positive or negative: " << value.positive_or_negative << std::endl;

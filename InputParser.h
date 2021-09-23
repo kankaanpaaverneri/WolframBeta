@@ -24,13 +24,14 @@ struct value
     char sign; // *, ^, /, sqrt()
     char variable;
     double number;
+    char open_bracket, closed_bracket;
 };
 
 class InputParser
 {
     private:
         std::string main_buffer;
-        std::vector<struct value> values;
+        std::vector<struct value> expression;
         const std::string example_sqrt_str {"sqrt["};
     public:
         InputParser();
@@ -42,7 +43,8 @@ class InputParser
         bool value_is_empty(const struct value value);
 
         bool parse_buffer(std::string buffer, std::string::iterator cur_it);
-        bool value_is_full(struct value &value);
+        bool write_in_value(std::string &sub_buffer, std::string::iterator &cur_it, struct value &value);
+        bool is_value_full(struct value &value);
         void display_values();
 
 
