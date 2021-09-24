@@ -21,17 +21,17 @@
 struct value
 {
     char positive_or_negative; // +, -
-    char sign; // *, ^, /, sqrt()
-    char variable;
-    double number;
-    char open_bracket, closed_bracket;
+    char sign; // *, ^, /, sqrt[]
+    char variable; //a-z and A-Z
+    double number; //0-9
+    char open_bracket, closed_bracket; //[ ]
 };
 
 class InputParser
 {
     private:
         std::string main_buffer;
-        std::vector<struct value> expression;
+        std::vector<std::vector<struct value>> collection_of_expressions;
         const std::string example_sqrt_str {"sqrt["};
     public:
         InputParser();
@@ -40,37 +40,36 @@ class InputParser
         std::string get_buffer();
 
         struct value init_value();
-        bool value_is_empty(const struct value value);
+        bool is_value_empty(const struct value value);
 
-        bool parse_buffer(std::string buffer, std::string::iterator cur_it);
-        bool write_in_value(std::string &sub_buffer, std::string::iterator &cur_it, struct value &value);
+        bool parse_buffer(std::string buffer, unsigned int &i);
+        bool write_in_value(const std::string sub_buffer, unsigned int &i, struct value &value);
         bool is_value_full(struct value &value);
-        void display_values();
+        void display_expressions();
 
 
-        bool is_number(const std::string::iterator it);
-        bool is_variable(const std::string::iterator it);
-        bool is_power_sign(const std::string::iterator it);
-        bool is_multiplication_sign(const std::string::iterator it);
-        bool is_division_sign(const std::string::iterator it);
-        bool is_minus_sign(const std::string::iterator it);
-        bool is_plus_sign(const std::string::iterator it);
-        bool is_sqrt_sign(const std::string::iterator it);
-        bool is_open_bracket(const std::string::iterator it);
-        bool is_closed_bracket(const std::string::iterator it);
+        bool is_number(const char character);
+        bool is_variable(const char character);
+        bool is_power_sign(const char character);
+        bool is_multiplication_sign(const char character);
+        bool is_division_sign(const char character);
+        bool is_minus_sign(const char character);
+        bool is_plus_sign(const char character);
+        bool is_open_bracket(const char character);
+        bool is_closed_bracket(const char character);
 
-        const double parse_numbers(const std::string sub_buffer, std::string::iterator &it);
-        const char parse_variable(const std::string sub_buffer, std::string::iterator &it);
-        const char parse_plus_sign(const std::string sub_buffer, std::string::iterator &it);
-        const char parse_minus_sign(const std::string sub_buffer, std::string::iterator &it);
-        const char parse_multiplication_sign(const std::string sub_buffer, std::string::iterator &it);
-        const char parse_division_sign(const std::string sub_buffer, std::string::iterator &it);
-        const char parse_power_sign(const std::string sub_buffer, std::string::iterator &it);
+        const double parse_numbers(const std::string sub_buffer, unsigned int &i);
+        const char parse_variable(const std::string sub_buffer, unsigned int &i);
+        const char parse_plus_sign(const std::string sub_buffer, unsigned int &i);
+        const char parse_minus_sign(const std::string sub_buffer, unsigned int &i);
+        const char parse_multiplication_sign(const std::string sub_buffer, unsigned int &i);
+        const char parse_division_sign(const std::string sub_buffer, unsigned int &i);
+        const char parse_power_sign(const std::string sub_buffer, unsigned int &i);
 
-        const char add_multiplication_if_required(const std::string &sub_buffer, const std::string::iterator &cur_it, const struct value &value);
-        const char add_plus_sign_if_required(const std::string &sub_buffer, const std::string::iterator &cur_it, const struct value &value);
-        const char convert_double_negative_to_positive(const std::string &sub_buffer, std::string::iterator &cur_it, const struct value &value);
-        const char convert_positive_negative_to_minus(const std::string &sub_buffer, std::string::iterator &cur_it, const struct value &value);
+        const char add_multiplication_if_required(const std::string sub_buffer, unsigned int &i, const struct value &value);
+        const char add_plus_sign_if_required(const std::string sub_buffer, unsigned int &i, const struct value &value);
+        const char convert_double_negative_to_positive(const std::string sub_buffer, unsigned int &i, const struct value &value);
+        const char convert_positive_negative_to_minus(const std::string sub_buffer, unsigned int &i, const struct value &value);
 };
 
 #endif

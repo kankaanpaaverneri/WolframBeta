@@ -19,7 +19,7 @@ struct value InputParser::init_value()
     return new_value;
 }
 
-bool InputParser::value_is_empty(const struct value value)
+bool InputParser::is_value_empty(const struct value value)
 {
     if(value.number == ZERO && value.positive_or_negative == EMPTY && value.sign == EMPTY && value.variable == EMPTY)
     {
@@ -28,20 +28,22 @@ bool InputParser::value_is_empty(const struct value value)
     return false;
 }
 
-bool InputParser::parse_buffer(std::string sub_buffer, std::string::iterator cur_it)
+bool InputParser::parse_buffer(const std::string sub_buffer, unsigned int &i)
 {
-    cur_it = sub_buffer.begin();
     struct value value {InputParser::init_value()};
+    std::vector<struct value> expression;
 
     /*
-    In this loop the iterator "it" will iterate through the buffer and
-    parse the characters in to a structure. When the structure
-    is filled it will be pushed in to a vector.
+    In this function we iterate through the sub_buffer and parse the data into a structure "value".
+    If the function encounters '[' character. The function will call it self recursively.
+    If the function encounters ']' character. The function will exit pushing the current local vector "expression"
+    into a "collection_of_expressions".
     */
 
-    while(cur_it != sub_buffer.end())
+    while(i != sub_buffer.size())
     {
-        if(InputParser::write_in_value(sub_buffer, cur_it, value) == false)
+        //Function will parse the data from the buffer one character at a time.
+        if(InputParser::write_in_value(sub_buffer, i, value) == false)
             return false;
 
         //This will determine if the current struct value "value" is ready to be pushed in to a vector "expression"
@@ -50,70 +52,85 @@ bool InputParser::parse_buffer(std::string sub_buffer, std::string::iterator cur
             expression.push_back(value);
             value = InputParser::init_value();
         }
+        
+        if(value.closed_bracket == CLOSED_BRACKET)
+        {
+            break;
+        }
     }
-    
+
+    collection_of_expressions.push_back(expression);
     return true;
 }
-bool InputParser::write_in_value(std::string &sub_buffer, std::string::iterator &cur_it, struct value &value)
+bool InputParser::write_in_value(const std::string sub_buffer, unsigned int &i, struct value &value)
 {
-    if(InputParser::is_number(cur_it))
+    if(InputParser::is_number(sub_buffer.at(i)))
     {
-        value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, cur_it, value);
-        value.sign = InputParser::add_multiplication_if_required(sub_buffer, cur_it, value);
+        value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, i, value);
+        value.sign = InputParser::add_multiplication_if_required(sub_buffer, i, value);
         
         double number {ZERO};
-        if((number = InputParser::parse_numbers(sub_buffer, cur_it)) != ZERO)  
+        if((number = InputParser::parse_numbers(sub_buffer, i)) != ZERO)  
             value.number = number;
     }
-    else if(InputParser::is_sqrt_sign(cur_it) != ZERO)
+    else if(InputParser::is_variable(sub_buffer.at(i)))
     {
-        std::cout << "Is sqrt" << std::endl;
-    }
-    else if(InputParser::is_variable(cur_it))
-    {
-        value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, cur_it, value);
-        value.sign = InputParser::add_multiplication_if_required(sub_buffer, cur_it, value);
+        value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, i, value);
+        value.sign = InputParser::add_multiplication_if_required(sub_buffer, i, value);
       
-    char variable {EMPTY};
-        if((variable = InputParser::parse_variable(sub_buffer, cur_it)) != EMPTY)
+        char variable {EMPTY};
+        if((variable = InputParser::parse_variable(sub_buffer, i)) != EMPTY)
             value.variable = variable;
     }
-    else if(InputParser::is_power_sign(cur_it))
+    else if(InputParser::is_power_sign(sub_buffer.at(i)))
     {
         char power_sign {EMPTY};
-        if((power_sign = InputParser::parse_power_sign(sub_buffer, cur_it)) != EMPTY)
+        if((power_sign = InputParser::parse_power_sign(sub_buffer, i)) != EMPTY)
             value.sign = power_sign;
     }
-    else if(InputParser::is_multiplication_sign(cur_it))
+    else if(InputParser::is_multiplication_sign(sub_buffer.at(i)))
     {
         char multiplication_sign {EMPTY};
-        if((multiplication_sign = InputParser::parse_multiplication_sign(sub_buffer, cur_it)) != EMPTY)
+        if((multiplication_sign = InputParser::parse_multiplication_sign(sub_buffer, i)) != EMPTY)
             value.sign = multiplication_sign;
     }
-    else if(InputParser::is_division_sign(cur_it))
+    else if(InputParser::is_division_sign(sub_buffer.at(i)))
     {
         char division_sign {EMPTY};
-        if((division_sign = InputParser::parse_division_sign(sub_buffer, cur_it)) != EMPTY)
+        if((division_sign = InputParser::parse_division_sign(sub_buffer, i)) != EMPTY)
         {
             value.sign = division_sign;
         }
     }
-    else if(InputParser::is_minus_sign(cur_it))
+    else if(InputParser::is_minus_sign(sub_buffer.at(i)))
     {
-        value.positive_or_negative = InputParser::convert_double_negative_to_positive(sub_buffer, cur_it, value);
+        value.positive_or_negative = InputParser::convert_double_negative_to_positive(sub_buffer, i, value);
         
         if(value.positive_or_negative == EMPTY)
-            value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, cur_it, value);
+            value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, i, value);
 
         if(value.positive_or_negative == EMPTY)
-            value.positive_or_negative = InputParser::parse_minus_sign(sub_buffer, cur_it);
+            value.positive_or_negative = InputParser::parse_minus_sign(sub_buffer, i);
     }
-    else if(InputParser::is_plus_sign(cur_it))
+    else if(InputParser::is_plus_sign(sub_buffer.at(i)))
     {
-        value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, cur_it, value);
+        value.positive_or_negative = InputParser::convert_positive_negative_to_minus(sub_buffer, i, value);
             
         if(value.positive_or_negative == EMPTY)
-            value.positive_or_negative = InputParser::parse_plus_sign(sub_buffer, cur_it);
+            value.positive_or_negative = InputParser::parse_plus_sign(sub_buffer, i);
+    }
+    else if(InputParser::is_open_bracket(sub_buffer.at(i)))
+    {
+        value.open_bracket = OPEN_BRACKET;
+        if(InputParser::parse_buffer(sub_buffer, ++i) == false)
+            return false;
+        
+        value.closed_bracket = CLOSED_BRACKET;
+    }
+    else if(InputParser::is_closed_bracket(sub_buffer.at(i)))
+    {
+        value.closed_bracket = CLOSED_BRACKET;
+        i++;
     }
     else
         return false;
@@ -125,8 +142,8 @@ bool InputParser::is_value_full(struct value &value)
 {
     int counter {0};
 
-    if(value.open_bracket == OPEN_BRACKET && value.closed_bracket == CLOSED_BRACKET)
-        counter++;
+    if(value.open_bracket == OPEN_BRACKET && value.closed_bracket == CLOSED_BRACKET) //If open_bracket and a closed_bracket is found
+        return true;
 
     if(value.number != ZERO || value.variable != EMPTY) //If number or variable is found
         counter++;
@@ -146,135 +163,122 @@ bool InputParser::is_value_full(struct value &value)
     return false;
 }
 
-void InputParser::display_values()
+void InputParser::display_expressions()
 {
-    for(auto value: expression)
+    for(auto expression: collection_of_expressions)
     {
-        if(value.positive_or_negative != EMPTY)
-            std::cout << "Positive or negative: " << value.positive_or_negative << std::endl;
-        if(value.sign != EMPTY)
-            std::cout << "Sign: " << value.sign << std::endl;
-        if(value.number != ZERO)
-            std::cout << "Number: " << value.number << std::endl;
-        if(value.variable != EMPTY)
-            std::cout << "Variable: " << value.variable << std::endl;
-        std::cout << std::endl;
-    }
-}
-
-bool InputParser::is_number(const std::string::iterator it)
-{
-    if(*it >= '0' && *it <= '9')
-        return true;
-
-    return false;
-}
-
-bool InputParser::is_variable(const std::string::iterator it)
-{
-    if((*it >= 'A' && *it <= 'Z') || (*it >= 'a' && *it <= 'z'))
-        return true;
-    
-    return false;
-}
-
-bool InputParser::is_power_sign(const std::string::iterator it)
-{
-    if(*it == POWER_SIGN)
-        return true;
-    
-    return false;
-}
-
-bool InputParser::is_multiplication_sign(const std::string::iterator it)
-{
-    if(*it == MULTIPLICATION_SIGN)
-        return true;
-    
-    return false;
-}
-
-bool InputParser::is_division_sign(const std::string::iterator it)
-{
-    if(*it == DIVISION_SIGN)
-        return true;
-    
-    return false;
-}
-
-bool InputParser::is_minus_sign(const std::string::iterator it)
-{
-    if(*it == MINUS_SIGN)
-        return true;
-    
-    return false;
-}
-
-bool InputParser::is_plus_sign(const std::string::iterator it)
-{
-    if(*it == PLUS_SIGN)
-        return true;
-    
-    return false;
-}
-
-bool InputParser::is_sqrt_sign(const std::string::iterator it)
-{
-    std::string::iterator temp_it {it};
-    
-    unsigned int i {0};
-    const unsigned int n {5};
-
-    while(i < n)
-    {
-        if(*temp_it == example_sqrt_str.at(i))
+        std::cout << std::endl << "Switch vector: " << std::endl << std::endl; 
+        for(auto value: expression)
         {
-            temp_it++;
-            i++;
+            if(value.positive_or_negative != EMPTY)
+                std::cout << "Positive or negative: " << value.positive_or_negative << std::endl;
+            if(value.sign != EMPTY)
+                std::cout << "Sign: " << value.sign << std::endl;
+            if(value.number != ZERO)
+                std::cout << "Number: " << value.number << std::endl;
+            if(value.variable != EMPTY)
+                std::cout << "Variable: " << value.variable << std::endl;
+            if(value.open_bracket != EMPTY)
+                std::cout << "Open bracket: " << value.open_bracket << std::endl;
+            if(value.closed_bracket != EMPTY)
+                std::cout << "Closed bracket: " << value.closed_bracket << std::endl;
+            std::cout << std::endl;
         }
-        else
-            return ZERO;
     }
-
-    return ZERO;
 }
 
-bool InputParser::is_open_bracket(const std::string::iterator it)
+bool InputParser::is_number(const char character)
 {
-    if(*it == OPEN_BRACKET)
+    if(character >= '0' && character <= '9')
+        return true;
+
+    return false;
+}
+
+bool InputParser::is_variable(const char character)
+{
+    if((character >= 'A' && character <= 'Z') || (character >= 'a' && character <= 'z'))
         return true;
     
     return false;
 }
 
-bool InputParser::is_closed_bracket(const std::string::iterator it)
+bool InputParser::is_power_sign(const char character)
 {
-    if(*it == CLOSED_BRACKET)
+    if(character == POWER_SIGN)
         return true;
     
     return false;
 }
 
-const double InputParser::parse_numbers(const std::string sub_buffer, std::string::iterator &it)
+bool InputParser::is_multiplication_sign(const char character)
+{
+    if(character == MULTIPLICATION_SIGN)
+        return true;
+    
+    return false;
+}
+
+bool InputParser::is_division_sign(const char character)
+{
+    if(character == DIVISION_SIGN)
+        return true;
+    
+    return false;
+}
+
+bool InputParser::is_minus_sign(const char character)
+{
+    if(character == MINUS_SIGN)
+        return true;
+    
+    return false;
+}
+
+bool InputParser::is_plus_sign(const char character)
+{
+    if(character == PLUS_SIGN)
+        return true;
+    
+    return false;
+}
+
+bool InputParser::is_open_bracket(const char character)
+{
+    if(character == OPEN_BRACKET)
+        return true;
+
+    return false;
+}
+
+bool InputParser::is_closed_bracket(const char character)
+{
+    if(character == CLOSED_BRACKET)
+        return true;
+    
+    return false;
+}
+
+const double InputParser::parse_numbers(const std::string sub_buffer, unsigned int &i)
 {
     std::string str_of_numbers {};
-    while(it != sub_buffer.end())
+    while(i != sub_buffer.size())
     {
-        if(InputParser::is_number(it))
+        if(InputParser::is_number(sub_buffer.at(i)))
         {
-            str_of_numbers += *it;
+            str_of_numbers += sub_buffer.at(i);
         }
-        else if(*it == '.')
+        else if(sub_buffer.at(i) == '.')
         {
-            str_of_numbers += *it;
+            str_of_numbers += sub_buffer.at(i);
         }
-        else if(*it == ',')
+        else if(sub_buffer.at(i) == ',')
         {
             str_of_numbers += '.';
         }
         else
             break;
-        it++;
+        i++;
     }
 
     if(str_of_numbers.empty())
@@ -283,142 +287,140 @@ const double InputParser::parse_numbers(const std::string sub_buffer, std::strin
     return std::stod(str_of_numbers);
 }
 
-const char InputParser::parse_variable(const std::string sub_buffer, std::string::iterator &it)
+const char InputParser::parse_variable(const std::string sub_buffer, unsigned int &i)
 {
     char variable {EMPTY};
 
-    if(it != sub_buffer.end())
+    if(i != sub_buffer.size())
     {
-        if(InputParser::is_variable(it))
-            variable = *it;
+        if(InputParser::is_variable(sub_buffer.at(i)))
+            variable = sub_buffer.at(i);
     }
-    it++;
+    i++;
     return variable;
 }
 
-const char InputParser::parse_multiplication_sign(const std::string sub_buffer, std::string::iterator &it)
+const char InputParser::parse_multiplication_sign(const std::string sub_buffer, unsigned int &i)
 {
     char multiplication_sign {EMPTY};
-    if(it != sub_buffer.end())
+    if(i != sub_buffer.size())
     {
-        if(InputParser::is_multiplication_sign(it))
-            multiplication_sign = *it;
+        if(InputParser::is_multiplication_sign(sub_buffer.at(i)))
+            multiplication_sign = sub_buffer.at(i);
     }
-    it++;
+    i++;
     return multiplication_sign;
 }
 
-const char InputParser::parse_plus_sign(const std::string sub_buffer, std::string::iterator &it)
+const char InputParser::parse_plus_sign(const std::string sub_buffer, unsigned int &i)
 {
     char plus_sign {EMPTY};
 
-    if(it != sub_buffer.end())
+    if(i != sub_buffer.size())
     {
-        if(InputParser::is_plus_sign(it))
-            plus_sign = *it;
+        if(InputParser::is_plus_sign(sub_buffer.at(i)))
+            plus_sign = sub_buffer.at(i);
     }
-    it++;
+    i++;
     return plus_sign;
 }
 
-const char InputParser::parse_minus_sign(const std::string sub_buffer, std::string::iterator &it)
+const char InputParser::parse_minus_sign(const std::string sub_buffer, unsigned int &i)
 {
     char minus_sign {EMPTY};
 
-    if(it != sub_buffer.end())
+    if(i != sub_buffer.size())
     {
-        if(InputParser::is_minus_sign(it))
-            minus_sign = *it;
+        if(InputParser::is_minus_sign(sub_buffer.at(i)))
+            minus_sign = sub_buffer.at(i);
     }
-    it++;
+    i++;
     return minus_sign;
 }
 
-const char InputParser::parse_division_sign(const std::string sub_buffer, std::string::iterator &it)
+const char InputParser::parse_division_sign(const std::string sub_buffer, unsigned int &i)
 {
     char division_sign {EMPTY};
 
-    if(it != sub_buffer.end())
+    if(i != sub_buffer.size())
     {
-        if(InputParser::is_division_sign(it))
-            division_sign = *it;
+        if(InputParser::is_division_sign(sub_buffer.at(i)))
+            division_sign = sub_buffer.at(i);
     }
-    it++;
+    i++;
     return division_sign;
 }
 
-const char InputParser::parse_power_sign(const std::string sub_buffer, std::string::iterator &it)
+const char InputParser::parse_power_sign(const std::string sub_buffer, unsigned int &i)
 {
     char power_sign {EMPTY};
 
-    if(it != sub_buffer.end())
+    if(i != sub_buffer.size())
     {
-        if(InputParser::is_power_sign(it))
-            power_sign = *it;
+        if(InputParser::is_power_sign(sub_buffer.at(i)))
+            power_sign = sub_buffer.at(i);
     }
-    it++;
+    i++;
     return power_sign;
 }
 
-const char InputParser::add_multiplication_if_required(const std::string &sub_buffer, const std::string::iterator &cur_it, const struct value &value)
+const char InputParser::add_multiplication_if_required(const std::string sub_buffer, unsigned int &i, const struct value &value)
 {
-    if(cur_it == sub_buffer.begin())    
+    if(i == ZERO)
         return EMPTY;
     
     if(value.sign != EMPTY)
         return value.sign;
     
-    if(InputParser::is_number(cur_it) && InputParser::is_variable(cur_it-1))
+    if(InputParser::is_number(sub_buffer.at(i)) && InputParser::is_variable(sub_buffer.at(i-1)))
         return MULTIPLICATION_SIGN;
-    else if(InputParser::is_variable(cur_it) && InputParser::is_number(cur_it-1))
+    else if(InputParser::is_variable(sub_buffer.at(i)) && InputParser::is_number(sub_buffer.at(i-1)))
         return MULTIPLICATION_SIGN;
-    else if(InputParser::is_variable(cur_it) && InputParser::is_variable(cur_it-1))
+    else if(InputParser::is_variable(sub_buffer.at(i)) && InputParser::is_variable(sub_buffer.at(i-1)))
         return MULTIPLICATION_SIGN;
     
     return EMPTY;
 }
 
-const char InputParser::add_plus_sign_if_required(const std::string &sub_buffer, const std::string::iterator &cur_it, const struct value &value)
+const char InputParser::add_plus_sign_if_required(const std::string sub_buffer, unsigned int &i, const struct value &value)
 {
-    if(cur_it == sub_buffer.begin())
+    //Adds a PLUS_SIGN to the value if iterator is at the beginning of an expression or at the beginning of a open_bracket
+    if(i == ZERO || sub_buffer.at(i-1) == OPEN_BRACKET)
         return PLUS_SIGN;
     
     if(value.positive_or_negative != EMPTY)
         return value.positive_or_negative;
     
-    
-    //Need to add some logic if we are in the first character after OPEN_BRACKET
-    
     return EMPTY;
 }
 
-const char InputParser::convert_double_negative_to_positive(const std::string &sub_buffer, std::string::iterator &cur_it, const struct value &value)
+const char InputParser::convert_double_negative_to_positive(const std::string sub_buffer, unsigned int &i, const struct value &value)
 {
-    if(cur_it == sub_buffer.begin())
+    if(i == ZERO || sub_buffer.at(i-1) == OPEN_BRACKET)
         return EMPTY;
 
-    if(InputParser::is_minus_sign(cur_it) && InputParser::is_minus_sign(cur_it-1))
+    if(InputParser::is_minus_sign(sub_buffer.at(i)) && InputParser::is_minus_sign(sub_buffer.at(i-1)))
     {
-        cur_it++;
+        i++;
         return PLUS_SIGN;
     }
     
     return EMPTY;
 }
 
-const char InputParser::convert_positive_negative_to_minus(const std::string &sub_buffer, std::string::iterator &cur_it, const struct value &value)
+const char InputParser::convert_positive_negative_to_minus(const std::string sub_buffer, unsigned int &i, const struct value &value)
 {
-    if(cur_it == sub_buffer.begin())
+    if(i == ZERO || sub_buffer.at(i-1) == OPEN_BRACKET)
         return EMPTY;
     
-    if(InputParser::is_minus_sign(cur_it) && InputParser::is_plus_sign(cur_it-1))
+    if(InputParser::is_minus_sign(sub_buffer.at(i)) && InputParser::is_plus_sign(sub_buffer.at(i-1)))
     {
-        cur_it++;
+        i++;
         return MINUS_SIGN;
     }
-    else if(InputParser::is_plus_sign(cur_it) && InputParser::is_minus_sign(cur_it-1))
+    else if(InputParser::is_plus_sign(sub_buffer.at(i)) && InputParser::is_minus_sign(sub_buffer.at(i-1)))
     {
-        cur_it++;
+        i++;
         return MINUS_SIGN;
     }
     return EMPTY;
