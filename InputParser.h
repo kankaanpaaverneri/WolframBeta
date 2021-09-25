@@ -17,11 +17,13 @@
 #define POWER_SIGN '^'
 #define OPEN_BRACKET '['
 #define CLOSED_BRACKET ']'
+#define SQRT_SIGN '&'
 
 struct value
 {
     char positive_or_negative; // +, -
-    char sign; // *, ^, /, sqrt[]
+    char sign; // *, ^, /
+    char sqrt_sign;
     char variable; //a-z and A-Z
     double number; //0-9
     char open_bracket, closed_bracket; //[ ]
@@ -57,6 +59,7 @@ class InputParser
         bool is_plus_sign(const char character);
         bool is_open_bracket(const char character);
         bool is_closed_bracket(const char character);
+        bool is_sqrt_sign(const std::string sub_buffer, unsigned int &current_position);
 
         const double parse_numbers(const std::string sub_buffer, unsigned int &i);
         const char parse_variable(const std::string sub_buffer, unsigned int &i);

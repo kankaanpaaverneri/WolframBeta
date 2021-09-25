@@ -15,15 +15,16 @@ std::string InputParser::get_buffer()
 
 struct value InputParser::init_value()
 {
-    struct value new_value {EMPTY, EMPTY, EMPTY, ZERO, EMPTY, EMPTY};
+    struct value new_value {EMPTY, EMPTY, EMPTY, EMPTY, ZERO, EMPTY, EMPTY};
     return new_value;
 }
 
 bool InputParser::is_value_empty(const struct value value)
 {
-    if(value.number == ZERO && value.positive_or_negative == EMPTY && value.sign == EMPTY && value.variable == EMPTY)
+    if(value.number == ZERO && value.positive_or_negative == EMPTY && value.sign == EMPTY && value.variable == EMPTY && value.sqrt_sign == EMPTY)
     {
-        return true;
+        if(value.open_bracket == EMPTY && value.closed_bracket == EMPTY)
+            return true;
     }
     return false;
 }
@@ -54,9 +55,7 @@ bool InputParser::parse_buffer(const std::string sub_buffer, unsigned int &i)
         }
         
         if(value.closed_bracket == CLOSED_BRACKET)
-        {
             break;
-        }
     }
 
     collection_of_expressions.push_back(expression);
@@ -64,6 +63,12 @@ bool InputParser::parse_buffer(const std::string sub_buffer, unsigned int &i)
 }
 bool InputParser::write_in_value(const std::string sub_buffer, unsigned int &i, struct value &value)
 {
+    if(InputParser::is_sqrt_sign(sub_buffer, i))
+    {
+        value.sqrt_sign = SQRT_SIGN;
+        return true;
+    }
+
     if(InputParser::is_number(sub_buffer.at(i)))
     {
         value.positive_or_negative = InputParser::add_plus_sign_if_required(sub_buffer, i, value);
@@ -122,9 +127,9 @@ bool InputParser::write_in_value(const std::string sub_buffer, unsigned int &i, 
     else if(InputParser::is_open_bracket(sub_buffer.at(i)))
     {
         value.open_bracket = OPEN_BRACKET;
-        if(InputParser::parse_buffer(sub_buffer, ++i) == false)
+        if(InputParser::parse_buffer(sub_buffer, ++i) == false) //RECURSION
             return false;
-        
+
         value.closed_bracket = CLOSED_BRACKET;
     }
     else if(InputParser::is_closed_bracket(sub_buffer.at(i)))
@@ -143,12 +148,18 @@ bool InputParser::is_value_full(struct value &value)
     int counter {0};
 
     if(value.open_bracket == OPEN_BRACKET && value.closed_bracket == CLOSED_BRACKET) //If open_bracket and a closed_bracket is found
-        return true;
+        counter++;
 
     if(value.number != ZERO || value.variable != EMPTY) //If number or variable is found
         counter++;
     
-    if(value.sign != EMPTY)
+    if(value.sign != EMPTY || (value.open_bracket == OPEN_BRACKET && value.closed_bracket == CLOSED_BRACKET))
+    {
+        if(value.positive_or_negative == EMPTY)
+            value.positive_or_negative = PLUS_SIGN;
+    }
+    
+    if(value.sqrt_sign != EMPTY)
     {
         if(value.positive_or_negative == EMPTY)
             value.positive_or_negative = PLUS_SIGN;
@@ -157,7 +168,7 @@ bool InputParser::is_value_full(struct value &value)
     if(value.positive_or_negative != EMPTY)
         counter++;
 
-    if(counter == 2)
+    if(counter >= 2)
         return true;
     
     return false;
@@ -178,6 +189,8 @@ void InputParser::display_expressions()
                 std::cout << "Number: " << value.number << std::endl;
             if(value.variable != EMPTY)
                 std::cout << "Variable: " << value.variable << std::endl;
+            if(value.sqrt_sign != EMPTY)
+                std::cout << "sqrt" << std::endl;
             if(value.open_bracket != EMPTY)
                 std::cout << "Open bracket: " << value.open_bracket << std::endl;
             if(value.closed_bracket != EMPTY)
@@ -257,6 +270,28 @@ bool InputParser::is_closed_bracket(const char character)
         return true;
     
     return false;
+}
+
+bool InputParser::is_sqrt_sign(const std::string sub_buffer, unsigned int &current_position)
+{
+    unsigned int i {current_position};
+    unsigned int j {0};
+    
+    while(i != sub_buffer.size())
+    {
+        if(j == example_sqrt_str.size())
+            break;
+        
+        if(sub_buffer.at(i) == example_sqrt_str.at(j))
+        {
+            i++;
+            j++;
+        }
+        else
+            return false;
+    }
+    current_position = i-1;
+    return true;
 }
 
 const double InputParser::parse_numbers(const std::string sub_buffer, unsigned int &i)
