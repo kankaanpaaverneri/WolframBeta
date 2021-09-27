@@ -1,12 +1,12 @@
 CC = g++
 CFLAGS = -std=c++17 -Wall -g
-OBJECTS = main.o InputParser.o Util.o
+OBJECTS = main.o InputParser.o Reduce.o Util.o
 BIN = WolframBeta
 
 all: link clean
 
 link: ${OBJECTS}
-	${CC} ${OBJECTS} -o ${BIN}
+	${CC} ${OBJECTS} -o ${BIN} -lm
 
 %.o: %.cpp
 	${CC} ${CFLAGS} -c $<

@@ -13,6 +13,16 @@ std::string InputParser::get_buffer()
     return this->main_buffer;
 }
 
+void InputParser::set_collection_of_expressions(const std::vector<std::vector<struct value>> collection_of_expressions)
+{
+    this->collection_of_expressions = collection_of_expressions;
+}
+
+const std::vector<std::vector<struct value>> InputParser::get_collection_of_expressions() const
+{
+    return this->collection_of_expressions;
+}
+
 struct value InputParser::init_value()
 {
     struct value new_value {EMPTY, EMPTY, EMPTY, EMPTY, ZERO, EMPTY, EMPTY};
@@ -178,9 +188,11 @@ void InputParser::display_expressions()
 {
     for(auto expression: collection_of_expressions)
     {
-        std::cout << std::endl << "Switch vector: " << std::endl << std::endl; 
+        std::cout << std::endl << "---------------" << std::endl << std::endl; 
         for(auto value: expression)
         {
+            std::cout << std::endl;
+
             if(value.positive_or_negative != EMPTY)
                 std::cout << "Positive or negative: " << value.positive_or_negative << std::endl;
             if(value.sign != EMPTY)

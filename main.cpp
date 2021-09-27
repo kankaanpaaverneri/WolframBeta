@@ -1,5 +1,6 @@
 #include <iostream>
 #include "InputParser.h"
+#include "Reduce.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +18,13 @@ int main(int argc, char *argv[])
 
     unsigned int i {0};
     if(parser.parse_buffer(parser.get_buffer(), i))
+    {
         parser.display_expressions();
+        Reduce reducer;
+        reducer.set_full_expression(parser.get_collection_of_expressions());
+        reducer.reduce_expression();
+        reducer.display_result();
+    }
     else
     {
         std::cout << "Error parsing the buffer" << std::endl;

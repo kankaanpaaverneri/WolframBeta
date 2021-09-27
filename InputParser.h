@@ -40,6 +40,8 @@ class InputParser
 
         void set_buffer(const std::string sub_buffer);
         std::string get_buffer();
+        void set_collection_of_expressions(std::vector<std::vector<struct value>> collection_of_expressions);
+        const std::vector<std::vector<struct value>> get_collection_of_expressions() const;
 
         struct value init_value();
         bool is_value_empty(const struct value value);
