@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
     if(parser.parse_buffer(parser.get_buffer(), i))
     {
         parser.display_expressions();
-        Reduce reducer;
-        reducer.set_full_expression(parser.get_collection_of_expressions());
-        reducer.reduce_expression();
+        Reduce reducer(parser.get_collection_of_expressions());
         reducer.display_result();
+        reducer.calculate_minus();
+        reducer.display_expressions();
     }
     else
     {

@@ -3,89 +3,177 @@
 Reduce::Reduce()
 {}
 
-void Reduce::set_full_expression(const std::vector<std::vector<struct value>> full_expression)
-{
-    this->full_expression = full_expression;
+Reduce::Reduce(std::vector<std::vector<struct value>> collection_of_expressions)
+    : full_expression {collection_of_expressions} {
 }
 
-const std::vector<std::vector<struct value>> Reduce::get_full_expression() const
-{
-    return this->full_expression;
-}
+Reduce::~Reduce()
+{}
 
-namespace my
+void Reduce::remove_element(std::vector<struct value> &vec, const unsigned int position)
 {
-    void remove(const unsigned int start_position, std::vector<struct value> &sub_expression)
-    {
-        for(unsigned int i {start_position}; i != sub_expression.size()-1; i++)
-        {
-            sub_expression.at(i) = sub_expression.at(i+1);
-        }
-    }
-};
-
-void Reduce::reduce_expression()
-{
-    for(auto sub_expression: full_expression)
-    {
-        for(auto i {sub_expression.begin()}; i != sub_expression.end(); i++)
-        {
-            //Calculate the value and result will be put inside the first value and the second value is removed
-            Reduce::calculate_power_operations(sub_expression);
-            //Calculate multiplication and division
-            //Calculate plus and minus
-            //Save result
-        }
-    }
-}
-
-void Reduce::calculate_power_operations(std::vector<struct value> &sub_expression)
-{
-    for(unsigned int i {0}; i != sub_expression.size(); i++)
-    {
-        //Calculate value and the result will be put inside the first value and the second value is removed
-        for(unsigned int j {i+1}; j != sub_expression.size(); j++)
-        {
-            if(sub_expression.at(i).variable != EMPTY || sub_expression.at(j).variable != EMPTY)
-                return;
-        
-            if(sub_expression.at(j).sign == POWER_SIGN)
-            {
-                double result = pow(sub_expression.at(i).number, sub_expression.at(j).number);
-                sub_expression.at(i).number = result;
-                my::remove(j, sub_expression);
-            }
-        }
-    }
+    auto it {vec.begin()};
+    it += position;
+    vec.erase(it);
 }
 
 void Reduce::display_result()
 {
-    bool first_number = {true};
     for(auto sub_expression: full_expression)
     {
+        int counter {0};
         for(auto value: sub_expression)
         {
-            if(value.sign == MULTIPLICATION_SIGN)
+            if(value.positive_or_negative != EMPTY && counter != 0)
+            {
+                if(value.sign == EMPTY)
+                    std::cout << value.positive_or_negative;
+            }
+            if(value.sign != EMPTY)
             {
                 if(value.variable == EMPTY)
-                {
                     std::cout << value.sign;
-                }
             }
-            else
-            {
-                std::cout << value.sign;
-            }
-            if(value.positive_or_negative != EMPTY && first_number != true && value.sign == EMPTY)
-                std::cout << value.positive_or_negative;
-            if(value.number != EMPTY && value.variable == EMPTY)
+            
+            if(value.number != ZERO)
                 std::cout << value.number;
             if(value.variable != EMPTY)
                 std::cout << value.variable;
-            
-            first_number = false;
+
+            counter++;
         }
     }
-    std::cout << std::endl << std::endl;
+    std::cout << std::endl;
+}
+
+void Reduce::display_expressions()
+{
+    for(auto expression: full_expression)
+    {
+        std::cout << std::endl << "---------------" << std::endl << std::endl; 
+        for(auto value: expression)
+        {
+            std::cout << std::endl;
+
+            if(value.positive_or_negative != EMPTY)
+                std::cout << "Positive or negative: " << value.positive_or_negative << std::endl;
+            if(value.sign != EMPTY)
+                std::cout << "Sign: " << value.sign << std::endl;
+            if(value.number != ZERO)
+                std::cout << "Number: " << value.number << std::endl;
+            if(value.variable != EMPTY)
+                std::cout << "Variable: " << value.variable << std::endl;
+            if(value.sqrt_sign != EMPTY)
+                std::cout << "sqrt" << std::endl;
+            if(value.open_bracket != EMPTY)
+                std::cout << "Open bracket: " << value.open_bracket << std::endl;
+            if(value.closed_bracket != EMPTY)
+                std::cout << "Closed bracket: " << value.closed_bracket << std::endl;
+            std::cout << std::endl;
+        }
+    }
+}
+
+void Reduce::calculate_power()
+{
+    unsigned int i {0};
+    unsigned int j {i+1};
+    for(auto &sub_expression: full_expression)
+    {
+        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //Check if both elements have double variables
+        {
+            if(sub_expression.at(j).sign == POWER_SIGN) // Check if j element has a POWER_SIGN
+            {
+                double result = pow(sub_expression.at(i).number, sub_expression.at(j).number);
+                sub_expression.at(i).number = result;
+                remove_element(sub_expression, j);
+            }
+        }
+    }
+}
+
+void Reduce::calculate_multiplication()
+{
+    unsigned int i {0};
+    unsigned int j {i+1};
+    for(auto &sub_expression: full_expression)
+    {
+        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //Check if both elements have double variables
+        {
+            if(sub_expression.at(j).sign == MULTIPLICATION_SIGN) // Check if j element has a MULTIPLICATION_SIGN
+            {
+                double result = sub_expression.at(i).number * sub_expression.at(j).number;
+                sub_expression.at(i).number = result;
+                remove_element(sub_expression, j);
+            }
+        }
+    }
+}
+
+void Reduce::calculate_division()
+{
+    unsigned int i {0};
+    unsigned int j {i+1};
+    for(auto &sub_expression: full_expression)
+    {
+        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //Check if both elements have double variables
+        {
+            if(sub_expression.at(j).sign == DIVISION_SIGN) // Check if j element has a DIVISON_SIGN
+            {
+                double result = sub_expression.at(i).number / sub_expression.at(j).number;
+                sub_expression.at(i).number = result;
+                remove_element(sub_expression, j);
+            }
+        }
+    }
+}
+
+void Reduce::calculate_minus()
+{
+    unsigned int i {0};
+    unsigned int j {i+1};
+    for(auto &sub_expression: full_expression)
+    {
+        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //Check if both elements have double variables
+        {
+            if(sub_expression.at(j).positive_or_negative == MINUS_SIGN) // Check if j element has a MINUS_SIGN
+            {
+                double result = sub_expression.at(i).number - sub_expression.at(j).number;
+
+                if(result < 0)
+                {
+                    sub_expression.at(i).positive_or_negative = MINUS_SIGN;
+                    result = abs(result);
+                }
+                
+                sub_expression.at(i).number = result;
+                remove_element(sub_expression, j); //Removes element from the vector at j index
+            }
+        }
+    }
+}
+
+void Reduce::calculate_plus()
+{
+    unsigned int i {0};
+    unsigned int j {i+1};
+    for(auto &sub_expression: full_expression)
+    {
+        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //Check if both elements have double variables
+        {
+            if(sub_expression.at(j).positive_or_negative == PLUS_SIGN) // Check if j element has a PLUS_SIGN
+            {
+                double result = sub_expression.at(i).number + sub_expression.at(j).number;
+
+                if(result < 0)
+                {
+                    sub_expression.at(i).positive_or_negative = MINUS_SIGN;
+                    result = abs(result);
+                }
+
+                sub_expression.at(i).number = result;
+                remove_element(sub_expression, j);
+            }
+        }
+    }
 }
