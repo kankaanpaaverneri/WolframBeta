@@ -116,13 +116,47 @@ void Reduce::calculate_division()
     unsigned int j {i+1};
     for(auto &sub_expression: full_expression)
     {
-        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //Check if both elements have double variables
+        if(sub_expression.at(i).number != ZERO && sub_expression.at(j).number != ZERO) //If we are dividing numbers
         {
             if(sub_expression.at(j).sign == DIVISION_SIGN) // Check if j element has a DIVISON_SIGN
             {
                 double result = sub_expression.at(i).number / sub_expression.at(j).number;
+                if(result < 0)
+                {
+                    sub_expression.at(i).positive_or_negative = MINUS_SIGN;
+                }
+                else if(result > 0)
+                {
+                    sub_expression.at(i).positive_or_negative = PLUS_SIGN;
+                }
                 sub_expression.at(i).number = result;
                 remove_element(sub_expression, j);
+            }
+        }
+        else if(sub_expression.at(i).variable != EMPTY && sub_expression.at(j).variable != EMPTY) // If we are dividing equal variables
+        {
+            if(sub_expression.at(j).sign == DIVISION_SIGN)
+            {
+                if(sub_expression.at(i).variable == sub_expression.at(j).variable) //if variables are the same
+                {
+                    double result {0};
+                    
+                    result = divide_equal_values(sub_expression.at(i), sub_expression.at(j));
+                    
+                    if(result < 0)
+                    {
+                        sub_expression.at(i).positive_or_negative = MINUS_SIGN;
+                        result = abs(result);
+                    }
+                    else if(result > 0)
+                    {
+                        sub_expression.at(i).positive_or_negative = PLUS_SIGN;
+                    }
+
+                    sub_expression.at(i).variable = EMPTY;
+                    sub_expression.at(i).number = result;
+                    remove_element(sub_expression, j);
+                }
             }
         }
     }
@@ -144,6 +178,10 @@ void Reduce::calculate_minus()
                 {
                     sub_expression.at(i).positive_or_negative = MINUS_SIGN;
                     result = abs(result);
+                }
+                else if(result > 0)
+                {
+                    sub_expression.at(i).positive_or_negative = PLUS_SIGN;
                 }
                 
                 sub_expression.at(i).number = result;
@@ -170,10 +208,35 @@ void Reduce::calculate_plus()
                     sub_expression.at(i).positive_or_negative = MINUS_SIGN;
                     result = abs(result);
                 }
+                else if(result > 0)
+                {
+                    sub_expression.at(i).positive_or_negative = PLUS_SIGN;
+                }
 
                 sub_expression.at(i).number = result;
                 remove_element(sub_expression, j);
             }
         }
     }
+}
+
+double Reduce::divide_equal_values(const struct value value1, const struct value value2)
+{
+    double result {0};
+    
+    if(value1.positive_or_negative == MINUS_SIGN && value2.positive_or_negative == MINUS_SIGN)
+    {
+        result = -1 / -1;
+    }
+    else if((value1.positive_or_negative == MINUS_SIGN && value2.positive_or_negative == PLUS_SIGN)
+                                                        || (value2.positive_or_negative == MINUS_SIGN && value1.positive_or_negative == PLUS_SIGN))
+    {
+        result = 1 / -1;
+    }
+    else
+    {
+        result = 1 / 1;
+    }
+
+    return result;
 }

@@ -21,7 +21,11 @@ class Reduce
         //Calculation functions
         void calculate_power();
         void calculate_multiplication();
+
         void calculate_division();
+        double divide_equal_values(const struct value value1, const struct value value2);
+        double divide_two_numbers(const struct value value1, const struct value value2);
+
         void calculate_minus();
         void calculate_plus();
 };
