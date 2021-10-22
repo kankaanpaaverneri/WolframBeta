@@ -120,15 +120,19 @@ void Reduce::calculate_division()
         {
             if(sub_expression.at(j).sign == DIVISION_SIGN) // Check if j element has a DIVISON_SIGN
             {
-                double result = sub_expression.at(i).number / sub_expression.at(j).number;
+                double result {0};
+                result = divide_two_numbers(sub_expression.at(i), sub_expression.at(j));
+
                 if(result < 0)
                 {
                     sub_expression.at(i).positive_or_negative = MINUS_SIGN;
+                    result = abs(result);
                 }
                 else if(result > 0)
                 {
                     sub_expression.at(i).positive_or_negative = PLUS_SIGN;
                 }
+
                 sub_expression.at(i).number = result;
                 remove_element(sub_expression, j);
             }
@@ -140,7 +144,6 @@ void Reduce::calculate_division()
                 if(sub_expression.at(i).variable == sub_expression.at(j).variable) //if variables are the same
                 {
                     double result {0};
-                    
                     result = divide_equal_values(sub_expression.at(i), sub_expression.at(j));
                     
                     if(result < 0)
@@ -223,19 +226,41 @@ void Reduce::calculate_plus()
 double Reduce::divide_equal_values(const struct value value1, const struct value value2)
 {
     double result {0};
+    const double negative_value {-1}, positive_value {1};
     
     if(value1.positive_or_negative == MINUS_SIGN && value2.positive_or_negative == MINUS_SIGN)
     {
-        result = -1 / -1;
+        result = negative_value / negative_value;
     }
     else if((value1.positive_or_negative == MINUS_SIGN && value2.positive_or_negative == PLUS_SIGN)
                                                         || (value2.positive_or_negative == MINUS_SIGN && value1.positive_or_negative == PLUS_SIGN))
     {
-        result = 1 / -1;
+        result = positive_value / negative_value;
     }
     else
     {
-        result = 1 / 1;
+        result = positive_value / positive_value;
+    }
+
+    return result;
+}
+
+double Reduce::divide_two_numbers(const struct value value1, const struct value value2)
+{
+    double result {0};
+
+    if(value1.positive_or_negative == MINUS_SIGN && value2.positive_or_negative == MINUS_SIGN)
+    {
+        result = -value1.number / -value2.number;
+    }
+    else if((value1.positive_or_negative == MINUS_SIGN && value2.positive_or_negative == PLUS_SIGN)
+                                                        || (value2.positive_or_negative == MINUS_SIGN && value1.positive_or_negative == PLUS_SIGN))
+    {
+        result = value1.number / -value2.number;
+    }
+    else
+    {
+        result = value1.number / value2.number;
     }
 
     return result;

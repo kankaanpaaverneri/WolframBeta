@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
         Reduce reducer(parser.get_collection_of_expressions());
         reducer.display_result();
         reducer.calculate_division();
+        reducer.calculate_division();
         reducer.display_expressions();
     }
     else
