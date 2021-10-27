@@ -18,12 +18,20 @@ class Reduce
         void display_result();
         void display_expressions();
 
+        void reduce_expression();
+        void clear_parenthesis();
+        void swap_positives_and_negatives_inside_parenthesis(std::vector<struct value> &parenthesis);
+
         //Calculation functions
         void calculate_power();
+        double power_two_numbers(const struct value value1, const struct value value2);
+
         void calculate_multiplication();
+        double multiply_equal_variables(const struct value value1, const struct value value2);
+        double multiply_two_numbers(const struct value value1, const struct value value2);
 
         void calculate_division();
-        double divide_equal_values(const struct value value1, const struct value value2);
+        double divide_equal_variables(const struct value value1, const struct value value2);
         double divide_two_numbers(const struct value value1, const struct value value2);
 
         void calculate_minus();

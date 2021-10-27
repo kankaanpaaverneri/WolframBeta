@@ -158,7 +158,10 @@ bool InputParser::is_value_full(struct value &value)
     int counter {0};
 
     if(value.open_bracket == OPEN_BRACKET && value.closed_bracket == CLOSED_BRACKET) //If open_bracket and a closed_bracket is found
+    {
+        value.sign = MULTIPLICATION_SIGN;
         counter++;
+    }
 
     if(value.number != ZERO || value.variable != EMPTY) //If number or variable is found
         counter++;
