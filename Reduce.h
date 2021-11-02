@@ -9,33 +9,27 @@ class Reduce
     private:
         std::vector<std::vector<struct value>> full_expression;
 
-        void remove_element(std::vector<struct value> &vec, const unsigned int position);
+        void remove_element(std::vector<struct value> &vec, const unsigned int index);
+        void insert_element(std::vector<struct value> &vec, const unsigned int index);
     public:
         Reduce();
         Reduce(std::vector<std::vector<struct value>> collection_of_expressions);
         ~Reduce();
 
-        void display_result();
-        void display_expressions();
+        void display_expression();
+        void display_values();
 
         void reduce_expression();
-        void clear_parenthesis();
-        void swap_positives_and_negatives_inside_parenthesis(std::vector<struct value> &parenthesis);
+
+        //Utility functions
+        bool end_of_term(const struct value value);
 
         //Calculation functions
-        void calculate_power();
-        double power_two_numbers(const struct value value1, const struct value value2);
-
         void calculate_multiplication();
+        void search_fixed_numbers(std::vector<struct value> &expression);
+        double multiply_fixed_numbers(const struct value value1, const struct value value2);
+        const struct value update_positive_or_negative(const double result, const struct value value);
         double multiply_equal_variables(const struct value value1, const struct value value2);
-        double multiply_two_numbers(const struct value value1, const struct value value2);
-
-        void calculate_division();
-        double divide_equal_variables(const struct value value1, const struct value value2);
-        double divide_two_numbers(const struct value value1, const struct value value2);
-
-        void calculate_minus();
-        void calculate_plus();
 };
 
 #endif

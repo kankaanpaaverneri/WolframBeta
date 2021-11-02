@@ -44,6 +44,7 @@ class InputParser
         const std::vector<std::vector<struct value>> get_collection_of_expressions() const;
 
         struct value init_value();
+        struct value init_power_of_one_value();
         bool is_value_empty(const struct value value);
 
         bool parse_buffer(std::string buffer, unsigned int &i);

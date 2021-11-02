@@ -29,6 +29,12 @@ struct value InputParser::init_value()
     return new_value;
 }
 
+struct value InputParser::init_power_of_one_value()
+{
+    struct value power_of_one {PLUS_SIGN, POWER_SIGN, EMPTY, EMPTY, 1, EMPTY, EMPTY};
+    return power_of_one;
+}
+
 bool InputParser::is_value_empty(const struct value value)
 {
     if(value.number == ZERO && value.positive_or_negative == EMPTY && value.sign == EMPTY && value.variable == EMPTY && value.sqrt_sign == EMPTY)
@@ -61,6 +67,8 @@ bool InputParser::parse_buffer(const std::string sub_buffer, unsigned int &i)
         if(InputParser::is_value_full(value))
         {
             expression.push_back(value);
+            struct value power_of_one {init_power_of_one_value()};
+            expression.push_back(power_of_one);
             value = InputParser::init_value();
         }
         
