@@ -62,6 +62,8 @@ void Reduce::display_values()
         std::cout << std::endl << "---------------" << std::endl << std::endl; 
         for(auto value: expression)
         {
+            if(value.sign == POWER_SIGN && value.number == 1)
+                continue;
             std::cout << std::endl;
 
             if(value.positive_or_negative != EMPTY)
@@ -103,6 +105,7 @@ void Reduce::calculate_multiplication()
     for(auto &sub_expression: full_expression)
     {
         search_fixed_numbers(sub_expression);
+        search_equal_variables(sub_expression);
     }
 }
 
@@ -113,7 +116,7 @@ void Reduce::search_fixed_numbers(std::vector<struct value> &expression)
         for(unsigned int j {i}; j < expression.size(); j++)
         {
             //If j and i are the same and we are not at the end of vector
-            if(j == i && j != expression.size()-1)
+            if(j == i && j < expression.size()-1)
                 j++;
             
             /*
@@ -122,7 +125,7 @@ void Reduce::search_fixed_numbers(std::vector<struct value> &expression)
             */
             if(end_of_term(expression.at(j)))
             {
-                i = j-1;
+                //i = j-1;
                 break;
             }
             
@@ -175,6 +178,37 @@ const struct value Reduce::update_positive_or_negative(const double result, cons
         new_value.positive_or_negative = PLUS_SIGN;
     
     return new_value;
+}
+
+void Reduce::search_equal_variables(std::vector<struct value> &expression)
+{
+    for(unsigned int i {0}; i < expression.size(); i++)
+    {
+        for(unsigned int j {i}; j < expression.size(); j++)
+        {
+            if(i == j && j < expression.size()-1)
+                j++;
+            
+            if(end_of_term(expression.at(j)))
+                break;
+
+            if(expression.at(i).variable != EMPTY && expression.at(j).variable != EMPTY)
+            {
+                if(expression.at(j).sign != MULTIPLICATION_SIGN)
+                    continue;
+                if(expression.at(i).variable != expression.at(j).variable)
+                    continue;
+                
+                double result = multiply_equal_variables(expression.at(i), expression.at(j));
+                expression.at(i) = update_positive_or_negative(result, expression.at(i));
+                if(expression.at(j).sign == MULTIPLICATION_SIGN)
+                    expression.at(i+1).number += expression.at(j+1).number;
+                
+                remove_element(expression, j);
+                remove_element(expression, j--);
+            }
+        }
+    }
 }
 
 double Reduce::multiply_equal_variables(const struct value value1, const struct value value2)

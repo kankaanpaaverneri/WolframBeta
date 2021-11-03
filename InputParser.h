@@ -35,6 +35,7 @@ class InputParser
         std::string main_buffer;
         std::vector<std::vector<struct value>> collection_of_expressions;
         const std::string example_sqrt_str {"sqrt["};
+
     public:
         InputParser();
 
@@ -44,6 +45,7 @@ class InputParser
         const std::vector<std::vector<struct value>> get_collection_of_expressions() const;
 
         struct value init_value();
+        void add_power_of_one_to_vector(std::vector<struct value> &expression, const struct value value);
         struct value init_power_of_one_value();
         bool is_value_empty(const struct value value);
 

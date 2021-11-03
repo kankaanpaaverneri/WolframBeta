@@ -29,6 +29,21 @@ struct value InputParser::init_value()
     return new_value;
 }
 
+void InputParser::add_power_of_one_to_vector(std::vector<struct value> &expression, const struct value value)
+{
+    const size_t n {expression.size()-1};
+    if(expression.at(n).sign == POWER_SIGN && expression.at(n).number > 1)
+    {
+        expression.at(n-1) = value;
+        expression.pop_back();
+    }
+    else
+    {
+        struct value power_of_one {init_power_of_one_value()};
+        expression.push_back(power_of_one);
+    }
+}
+
 struct value InputParser::init_power_of_one_value()
 {
     struct value power_of_one {PLUS_SIGN, POWER_SIGN, EMPTY, EMPTY, 1, EMPTY, EMPTY};
@@ -67,8 +82,7 @@ bool InputParser::parse_buffer(const std::string sub_buffer, unsigned int &i)
         if(InputParser::is_value_full(value))
         {
             expression.push_back(value);
-            struct value power_of_one {init_power_of_one_value()};
-            expression.push_back(power_of_one);
+            add_power_of_one_to_vector(expression, value);
             value = InputParser::init_value();
         }
         
@@ -79,6 +93,7 @@ bool InputParser::parse_buffer(const std::string sub_buffer, unsigned int &i)
     collection_of_expressions.push_back(expression);
     return true;
 }
+
 bool InputParser::write_in_value(const std::string sub_buffer, unsigned int &i, struct value &value)
 {
     if(InputParser::is_sqrt_sign(sub_buffer, i))

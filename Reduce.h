@@ -29,6 +29,8 @@ class Reduce
         void search_fixed_numbers(std::vector<struct value> &expression);
         double multiply_fixed_numbers(const struct value value1, const struct value value2);
         const struct value update_positive_or_negative(const double result, const struct value value);
+
+        void search_equal_variables(std::vector<struct value> &expression);
         double multiply_equal_variables(const struct value value1, const struct value value2);
 };
 
