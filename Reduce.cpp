@@ -104,8 +104,8 @@ void Reduce::calculate_multiplication()
 {
     for(auto &sub_expression: full_expression)
     {
-        search_fixed_numbers(sub_expression);
         search_equal_variables(sub_expression);
+        search_fixed_numbers(sub_expression);
     }
 }
 
@@ -124,14 +124,14 @@ void Reduce::search_fixed_numbers(std::vector<struct value> &expression)
             Then we increment i at the beginning of the second term and exit the inner loop.
             */
             if(end_of_term(expression.at(j)))
-            {
-                //i = j-1;
                 break;
-            }
             
             if(expression.at(i).number != ZERO && expression.at(j).number != ZERO)
             {   
                 if(expression.at(j).sign != MULTIPLICATION_SIGN)
+                    continue;
+                
+                if(expression.at(i).sign == POWER_SIGN && expression.size() != 1)
                     continue;
 
                 //Multiplication operation
@@ -197,6 +197,8 @@ void Reduce::search_equal_variables(std::vector<struct value> &expression)
                 if(expression.at(j).sign != MULTIPLICATION_SIGN)
                     continue;
                 if(expression.at(i).variable != expression.at(j).variable)
+                    continue;
+                if(expression.at(i).sign == POWER_SIGN && expression.size() != 1)
                     continue;
                 
                 double result = multiply_equal_variables(expression.at(i), expression.at(j));
