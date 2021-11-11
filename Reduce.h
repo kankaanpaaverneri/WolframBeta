@@ -22,7 +22,7 @@ class Reduce
         bool is_power_of_one(const struct value value);
         struct value create_power_of_one();
         bool exponent_match(const struct value value1, const struct value value2);
-        void add_coefficient_of_one(std::vector<struct value> &term);
+        bool add_coefficient_of_one(std::vector<struct value> &term);
         bool is_coefficient(const std::vector<struct value> term);
         const struct value update_positive_or_negative(const double result, const struct value value);
 
@@ -54,7 +54,8 @@ class Reduce
         double subtract_fixed_numbers(const struct value value1, const struct value value2);
         double subtract_equal_variables(const struct value value1, const struct value value2);
         std::vector<struct value> init_term(const std::vector<struct value> expression, unsigned int &cur_index, const bool update_index);
-        void update_expression(std::vector<struct value> &expression, const std::vector<struct value> result_term, const unsigned int start, const size_t end);
+        void remove_old_terms(std::vector<struct value> &expression, const unsigned int start, const unsigned int end);
+        void update_expression(std::vector<struct value> &expression, const std::vector<struct value> result_term, const unsigned int start);
 
 };
 
