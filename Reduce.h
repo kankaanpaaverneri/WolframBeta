@@ -16,22 +16,46 @@ class Reduce
         Reduce(std::vector<std::vector<struct value>> collection_of_expressions);
         ~Reduce();
 
+        //Utility functions
+        bool end_of_term(const struct value value);
+        unsigned int length_of_term(const std::vector<struct value> expression, const unsigned int start);
+        bool is_power_of_one(const struct value value);
+        struct value create_power_of_one();
+        bool exponent_match(const struct value value1, const struct value value2);
+        void add_coefficient_of_one(std::vector<struct value> &term);
+        bool is_coefficient(const std::vector<struct value> term);
+        const struct value update_positive_or_negative(const double result, const struct value value);
+
         void display_expression();
         void display_values();
 
         void reduce_expression();
 
-        //Utility functions
-        bool end_of_term(const struct value value);
-
         //Calculation functions
-        void calculate_multiplication();
-        void search_fixed_numbers(std::vector<struct value> &expression);
-        double multiply_fixed_numbers(const struct value value1, const struct value value2);
-        const struct value update_positive_or_negative(const double result, const struct value value);
 
-        void search_equal_variables(std::vector<struct value> &expression);
+        //Multiplication functions
+        void calculate_multiplication();
+        void search_fixed_numbers_to_multiply(std::vector<struct value> &expression);
+        double multiply_fixed_numbers(const struct value value1, const struct value value2);
+        void search_equal_variables_to_multiply(std::vector<struct value> &expression);
         double multiply_equal_variables(const struct value value1, const struct value value2);
+
+        //Division functions
+        void calculate_division();
+        void search_fixed_numbers_to_divide(std::vector<struct value> &expression);
+        double divide_fixed_numbers(const struct value value1, const struct value value2);
+        void search_equal_variables_to_divide(std::vector<struct value> &expression);
+        double divide_equal_variables(const struct value value1, const struct value value2);
+
+        //Subtraction functions
+        void calculate_subtraction();
+        void subtract_terms(std::vector<struct value> &expression);
+        std::vector<struct value> reduce_terms(const std::vector<struct value> larger_term, const std::vector<struct value> smaller_term);
+        double subtract_fixed_numbers(const struct value value1, const struct value value2);
+        double subtract_equal_variables(const struct value value1, const struct value value2);
+        std::vector<struct value> init_term(const std::vector<struct value> expression, unsigned int &cur_index, const bool update_index);
+        void update_expression(std::vector<struct value> &expression, const std::vector<struct value> result_term, const unsigned int start, const size_t end);
+
 };
 
 #endif

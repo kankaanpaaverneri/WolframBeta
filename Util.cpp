@@ -28,3 +28,21 @@ long long convert_decimal_to_binary(int n)
     }
     return binary_number;
 }
+
+void print_vector(const std::vector<struct value> vec)
+{
+    unsigned int i {0};
+    for(auto it: vec)
+    {
+        if(it.positive_or_negative != EMPTY)
+            std::cout << it.positive_or_negative;
+        if(it.sign != EMPTY)
+            std::cout << it.sign;
+        if(it.number != ZERO)
+            std::cout << it.number;
+        if(it.variable != EMPTY)
+            std::cout << it.variable;
+        i++;
+    }
+    std::cout << std::endl;
+}
