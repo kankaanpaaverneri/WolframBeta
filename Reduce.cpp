@@ -26,6 +26,13 @@ void Reduce::insert_element(std::vector<struct value> &vec, const unsigned int i
     vec.insert(position, new_empty_element);
 }
 
+void Reduce::remove_term(std::vector<std::vector<struct value>> &vector_of_terms, const unsigned int index)
+{
+    auto position {vector_of_terms.begin()};
+    position += index;
+    vector_of_terms.erase(position);
+}
+
 bool Reduce::end_of_term(const struct value value)
 {
     if(value.sign == EMPTY)
@@ -34,18 +41,6 @@ bool Reduce::end_of_term(const struct value value)
             return true;
     }
     return false;
-}
-
-unsigned int Reduce::length_of_term(const std::vector<struct value> expression, const unsigned int start)
-{
-    unsigned int i {start};
-    while(i < expression.size())
-    {
-        if(end_of_term(expression.at(i)) && i != start)
-            break;
-        i++;
-    }
-    return i-start;
 }
 
 bool Reduce::is_power_of_one(const struct value value)
@@ -77,9 +72,9 @@ bool Reduce::exponent_match(const struct value value1, const struct value value2
     return false;
 }
 
-bool Reduce::add_coefficient_of_one(std::vector<struct value> &term)
+void Reduce::add_coefficient_of_one(std::vector<struct value> &term)
 {
-    if(!is_coefficient(term))
+    if(!is_coefficient(term)) //If there is no coefficient
     {
         InputParser parser;
         //Adding coefficient_of_one
@@ -94,10 +89,6 @@ bool Reduce::add_coefficient_of_one(std::vector<struct value> &term)
         struct value power_of_one {create_power_of_one()};
         term.at(1) = power_of_one;
     }
-    else
-        return false; //coefficient is found
-    
-    return true; //Coefficient not found and has been added
 }
 
 bool Reduce::is_coefficient(const std::vector<struct value> term)
@@ -198,8 +189,8 @@ void Reduce::calculate_multiplication()
 {
     for(auto &expression: full_expression)
     {
-        search_equal_variables_to_multiply(expression);
         search_fixed_numbers_to_multiply(expression);
+        search_equal_variables_to_multiply(expression);
     }
 }
 
@@ -448,61 +439,65 @@ void Reduce::calculate_subtraction()
 
 void Reduce::subtract_terms(std::vector<struct value> &expression)
 {
-    unsigned int cur_index {0};
-    while(cur_index < expression.size())
+    std::vector<std::vector<struct value>> vector_of_terms;
+
+    //Initialiazing vector_of_terms 
+    for(unsigned int i {0}; i < expression.size();)
     {
-        std::vector<struct value> first_term {init_term(expression, cur_index, true)};
-        std::vector<struct value> second_term {init_term(expression, cur_index, false)};
+        std::vector<struct value> term {init_term(expression, i, true)};
+        vector_of_terms.push_back(term);
+    }
 
-        if(first_term.size() == 0 || second_term.size() == 0)
-            return;
-        
-        bool first {false};
-        bool second {false};
-        
-        first = add_coefficient_of_one(first_term);
-        second = add_coefficient_of_one(second_term);
+    unsigned int current_term {0};
 
-        if(first && second)
-            cur_index += 2;
-        else if(first && !second)
-            cur_index += 2;
+    while(current_term < vector_of_terms.size()-1)
+    {
+        auto first_term {vector_of_terms.at(current_term)};
+        auto second_term {vector_of_terms.at(current_term+1)};
+
+        add_coefficient_of_one(first_term);
+        add_coefficient_of_one(second_term);
 
         std::vector<struct value> result_term {};
-
+        bool terms_match {false};
+        
         if(first_term.size() >= second_term.size())
         {
-            result_term = reduce_terms(first_term, second_term);
+            terms_match = reduce_terms(result_term, first_term, second_term);
         }
         else if(first_term.size() < second_term.size())
         {
-            result_term = reduce_terms(second_term, first_term);
+            terms_match = reduce_terms(result_term, second_term, first_term);
         }
 
-        if(!result_term.empty())
+        if(terms_match)
         {
-            unsigned int start {0};
-            start = cur_index-first_term.size();
-            unsigned int end {0};
-            end = first_term.size() + second_term.size();
-            remove_old_terms(expression, start, end);
-            update_expression(expression, result_term, start);
-            break;
+            vector_of_terms.at(current_term) = result_term;
+
+            if(current_term < vector_of_terms.size()-1)
+                remove_term(vector_of_terms, current_term+1);    
         }
         else
         {
-            if(first && second)
-                cur_index -= 2;
-            else if(first && !second)
-                cur_index -= 2;
+            current_term++;
+        }
+    }
+
+    //Update original expression
+    expression.clear();
+    for(auto term: vector_of_terms)
+    {
+        for(auto value: term)
+        {
+            expression.push_back(value);
         }
     }
 }
 
-std::vector<struct value> Reduce::reduce_terms(const std::vector<struct value> larger_term, const std::vector<struct value> smaller_term)
+bool Reduce::reduce_terms(std::vector<struct value> &result_term, const std::vector<struct value> larger_term, const std::vector<struct value> smaller_term)
 {
-    std::vector<struct value> result_term {};
     bool terms_match {false};
+
     for(unsigned int i {0}; i < larger_term.size(); i++)
     {
         if(is_power_of_one(larger_term.at(i)))
@@ -545,6 +540,7 @@ std::vector<struct value> Reduce::reduce_terms(const std::vector<struct value> l
                     value = update_positive_or_negative(value.number, larger_term.at(i));
                     value.variable = smaller_term.at(j).variable;
                     value.number = ZERO;
+                    value.sign = MULTIPLICATION_SIGN;
                     result_term.push_back(value);
                     terms_match = true;
                 }
@@ -556,6 +552,7 @@ std::vector<struct value> Reduce::reduce_terms(const std::vector<struct value> l
     print_vector(result_term);
     if(terms_match)
     {
+        //If result is equal to zero
         if(result_term.at(0).number == ZERO && result_term.at(0).variable == EMPTY)
         {
             InputParser parser;
@@ -568,9 +565,8 @@ std::vector<struct value> Reduce::reduce_terms(const std::vector<struct value> l
     else
     {
         std::cout << "Termit ei matchaa" << std::endl;
-        result_term.clear();
     }
-    return result_term;
+    return terms_match;
 }
 
 double Reduce::subtract_fixed_numbers(const struct value value1, const struct value value2)
@@ -642,44 +638,4 @@ std::vector<struct value> Reduce::init_term(const std::vector<struct value> expr
         cur_index = i;
     
     return term;
-}
-
-void Reduce::remove_old_terms(std::vector<struct value> &expression, const unsigned int start, const unsigned int end)
-{
-    unsigned int i {start};
-    while(i < expression.size())
-    {
-        if(i == end)
-            break;
-        
-        remove_element(expression, i);
-    }
-}
-
-void Reduce::update_expression(std::vector<struct value> &expression, const std::vector<struct value> result_term, const unsigned int start)
-{
-    if(expression.size() == 0)
-    {
-        unsigned int i {0};
-        while(i < result_term.size())
-        {
-            expression.push_back(result_term.at(i));
-            struct value power_of_one {create_power_of_one()};
-            expression.push_back(power_of_one);
-            i++;
-        }
-    }
-    else
-    {
-        unsigned int i {start}, j {0};
-        while(j < result_term.size())
-        {
-            insert_element(expression, i);
-            expression.at(i) = result_term.at(j++);
-
-            struct value power_of_one {create_power_of_one()};
-            insert_element(expression, i);
-            expression.at(i) = power_of_one;
-        }
-    }
 }

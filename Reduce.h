@@ -11,6 +11,7 @@ class Reduce
 
         void remove_element(std::vector<struct value> &vec, const unsigned int index);
         void insert_element(std::vector<struct value> &vec, const unsigned int index);
+        void remove_term(std::vector<std::vector<struct value>> &vector_of_terms, const unsigned int index);
     public:
         Reduce();
         Reduce(std::vector<std::vector<struct value>> collection_of_expressions);
@@ -18,11 +19,10 @@ class Reduce
 
         //Utility functions
         bool end_of_term(const struct value value);
-        unsigned int length_of_term(const std::vector<struct value> expression, const unsigned int start);
         bool is_power_of_one(const struct value value);
         struct value create_power_of_one();
         bool exponent_match(const struct value value1, const struct value value2);
-        bool add_coefficient_of_one(std::vector<struct value> &term);
+        void add_coefficient_of_one(std::vector<struct value> &term);
         bool is_coefficient(const std::vector<struct value> term);
         const struct value update_positive_or_negative(const double result, const struct value value);
 
@@ -50,12 +50,10 @@ class Reduce
         //Subtraction functions
         void calculate_subtraction();
         void subtract_terms(std::vector<struct value> &expression);
-        std::vector<struct value> reduce_terms(const std::vector<struct value> larger_term, const std::vector<struct value> smaller_term);
+        bool reduce_terms(std::vector<struct value> &result_term, const std::vector<struct value> larger_term, const std::vector<struct value> smaller_term);
         double subtract_fixed_numbers(const struct value value1, const struct value value2);
         double subtract_equal_variables(const struct value value1, const struct value value2);
         std::vector<struct value> init_term(const std::vector<struct value> expression, unsigned int &cur_index, const bool update_index);
-        void remove_old_terms(std::vector<struct value> &expression, const unsigned int start, const unsigned int end);
-        void update_expression(std::vector<struct value> &expression, const std::vector<struct value> result_term, const unsigned int start);
 
 };
 
